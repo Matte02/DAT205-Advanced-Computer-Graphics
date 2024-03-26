@@ -21,6 +21,7 @@ using namespace glm;
 #include <Model.h>
 #include "hdr.h"
 #include "fbo.h"
+#include "../build/project/terrain.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -73,13 +74,8 @@ vec3 worldUp(0.0f, 1.0f, 0.0f);
 ///////////////////////////////////////////////////////////////////////////////
 // Models
 ///////////////////////////////////////////////////////////////////////////////
-labhelper::Model* fighterModel = nullptr;
-labhelper::Model* landingpadModel = nullptr;
-labhelper::Model* sphereModel = nullptr;
+BaseTerrain m_terrain;
 
-mat4 roomModelMatrix;
-mat4 landingPadModelMatrix;
-mat4 fighterModelMatrix;
 
 void loadShaders(bool is_reload)
 {
@@ -118,13 +114,7 @@ void initialize()
 	///////////////////////////////////////////////////////////////////////
 	// Load models and set up model matrices
 	///////////////////////////////////////////////////////////////////////
-	fighterModel = labhelper::loadModelFromOBJ("../scenes/NewShip.obj");
-	landingpadModel = labhelper::loadModelFromOBJ("../scenes/landingpad.obj");
-	sphereModel = labhelper::loadModelFromOBJ("../scenes/sphere.obj");
-
-	roomModelMatrix = mat4(1.0f);
-	fighterModelMatrix = translate(15.0f * worldUp);
-	landingPadModelMatrix = mat4(1.0f);
+	m_terrain.InitTerrain(4.0f);
 
 	///////////////////////////////////////////////////////////////////////
 	// Load environment map
@@ -144,7 +134,7 @@ void debugDrawLight(const glm::mat4& viewMatrix,
 	glUseProgram(shaderProgram);
 	labhelper::setUniformSlow(shaderProgram, "modelViewProjectionMatrix",
 	                          projectionMatrix * viewMatrix * modelMatrix);
-	labhelper::render(sphereModel);
+	// labhelper::render(sphereModel);
 }
 
 
@@ -184,23 +174,6 @@ void drawScene(GLuint currentShaderProgram,
 	// camera
 	labhelper::setUniformSlow(currentShaderProgram, "viewInverse", inverse(viewMatrix));
 
-	// landing pad
-	labhelper::setUniformSlow(currentShaderProgram, "modelViewProjectionMatrix",
-	                          projectionMatrix * viewMatrix * landingPadModelMatrix);
-	labhelper::setUniformSlow(currentShaderProgram, "modelViewMatrix", viewMatrix * landingPadModelMatrix);
-	labhelper::setUniformSlow(currentShaderProgram, "normalMatrix",
-	                          inverse(transpose(viewMatrix * landingPadModelMatrix)));
-
-	labhelper::render(landingpadModel);
-
-	// Fighter
-	labhelper::setUniformSlow(currentShaderProgram, "modelViewProjectionMatrix",
-	                          projectionMatrix * viewMatrix * fighterModelMatrix);
-	labhelper::setUniformSlow(currentShaderProgram, "modelViewMatrix", viewMatrix * fighterModelMatrix);
-	labhelper::setUniformSlow(currentShaderProgram, "normalMatrix",
-	                          inverse(transpose(viewMatrix * fighterModelMatrix)));
-
-	labhelper::render(fighterModel);
 }
 
 
@@ -249,18 +222,10 @@ void display(void)
 	///////////////////////////////////////////////////////////////////////////
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, windowWidth, windowHeight);
-	glClearColor(0.2f, 0.2f, 0.8f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	{
-		labhelper::perf::Scope s( "Background" );
-		drawBackground(viewMatrix, projMatrix);
-	}
-	{
-		labhelper::perf::Scope s( "Scene" );
-		drawScene( shaderProgram, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix );
-	}
-	debugDrawLight(viewMatrix, projMatrix, vec3(lightPosition));
+	m_terrain.Render(projMatrix * viewMatrix, simpleShaderProgram);
 
 }
 
@@ -407,10 +372,6 @@ int main(int argc, char* argv[])
 		// Swap front and back buffer. This frame will now been displayed.
 		SDL_GL_SwapWindow(g_window);
 	}
-	// Free Models
-	labhelper::freeModel(fighterModel);
-	labhelper::freeModel(landingpadModel);
-	labhelper::freeModel(sphereModel);
 
 	// Shut down everything. This includes the window and all other subsystems.
 	labhelper::shutDown(g_window);

@@ -1,0 +1,12 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "project.exe (C:\\Users\\Mathias\\Documents\\DAT205\\DAT205-Advanced-Computer-Graphics\\bin\\project.exe)",
+      "name": "project.exe (C:\\Users\\Mathias\\Documents\\DAT205\\DAT205-Advanced-Computer-Graphics\\bin\\project.exe)"
+    }
+  ]
+}
