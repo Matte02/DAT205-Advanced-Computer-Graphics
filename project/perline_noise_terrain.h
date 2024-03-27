@@ -9,7 +9,7 @@ public:
 	PerlinNoiseTerrain() {
 	};
 
-	void GenerateHeightMap(float lacunarity, float gain, int octaves, float offset, float sampleScale, float heightScale);
+	void GenerateHeightMap(float lacunarity, float gain, int octaves, float offset, float sampleScale, float maxHeight, int wrap);
 
 protected:
 

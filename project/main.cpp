@@ -87,12 +87,13 @@ static int octaves = 6;
 static float gain = 0.5;
 static float lacunarity = 2.0;
 static float sampleScale = 0.01;
-static int heightScale = 100;
+static int maxHeight = 100;
+static int wrap = 0;
 
 void generateTerrain() {
 	m_terrain.Destroy();
 	m_terrain.InitTerrain(worldScale, worldSize);
-	m_terrain.GenerateHeightMap(lacunarity, gain, octaves, offset, sampleScale, heightScale);
+	m_terrain.GenerateHeightMap(lacunarity, gain, octaves, offset, sampleScale, maxHeight, wrap);
 }
 
 void loadShaders(bool is_reload)
@@ -362,7 +363,8 @@ void saveSettings() {
 		file << gain << "\n";
 		file << lacunarity << "\n";
 		file << sampleScale << "\n";
-		file << heightScale << "\n";
+		file << maxHeight << "\n";
+		file << wrap << "\n";
 		file.close();
 	}
 }
@@ -371,7 +373,7 @@ void loadSettings() {
 	std::ifstream file("terrain_settings.txt");
 	if (file.is_open()) {
 		// Attempt to read settings from the file
-		if (file >> worldScale >> worldSize >> offset >> octaves >> gain >> lacunarity >> sampleScale >> heightScale) {
+		if (file >> worldScale >> worldSize >> offset >> octaves >> gain >> lacunarity >> sampleScale >> maxHeight >> wrap) {
 			// Check if all variables were successfully read
 			std::string extra;
 			if (file >> extra) {
@@ -406,7 +408,8 @@ void renderTerrainUI() {
 
 		// World Scale
 		ImGui::Text("World Scale:");
-		if (ImGui::SliderFloat("##World Scale", &worldScale, 0.0, 100.0))
+		// I want to add a tool tip for this slider
+		if (ImGui::SliderFloat("##World Scale", &worldScale, 0.0, 20.0))
 			generateTerrain();
 
 		// World Size
@@ -416,11 +419,11 @@ void renderTerrainUI() {
 
 		// Perlin Noise Parameters
 		ImGui::Text("Offset:");
-		if (ImGui::SliderFloat("##Offset", &offset, 0, 2.0))
+		if (ImGui::SliderFloat("##Offset", &offset, 0, 4.0))
 			generateTerrain();
 
 		ImGui::Text("Octaves:");
-		if (ImGui::SliderInt("##Octaves", &octaves, 0, 10))
+		if (ImGui::SliderInt("##Octaves", &octaves, 0, 8))
 			generateTerrain();
 
 		ImGui::Text("Gain:");
@@ -428,15 +431,20 @@ void renderTerrainUI() {
 			generateTerrain();
 
 		ImGui::Text("Lacunarity:");
-		if (ImGui::SliderFloat("##Lacunarity", &lacunarity, 0.0, 25.0))
+		if (ImGui::SliderFloat("##Lacunarity", &lacunarity, 0.0, 10.0))
 			generateTerrain();
 
 		ImGui::Text("Sample Scale:");
-		if (ImGui::SliderFloat("##SampleScale", &sampleScale, 0.0, 1.0))
+		if (ImGui::SliderFloat("##SampleScale", &sampleScale, 0.0, 0.3))
 			generateTerrain();
 
 		ImGui::Text("Height Scale:");
-		if (ImGui::SliderInt("##Height Scale", &heightScale, 0, 1000))
+		if (ImGui::SliderInt("##Height Scale", &maxHeight, 0, 256))
+			generateTerrain();
+
+
+		ImGui::Text("Wrap:");
+		if (ImGui::SliderInt("##Wrap", &wrap, 0, 256))
 			generateTerrain();
 
 		if (ImGui::Button("Save Settings")) {
