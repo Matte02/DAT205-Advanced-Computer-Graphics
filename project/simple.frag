@@ -7,7 +7,8 @@ uniform vec3 material_color;
 
 layout(location = 0) out vec4 fragmentColor;
 
+in vec4 Color;
 void main()
 {
-	fragmentColor = vec4(material_color, 1.0);
+	fragmentColor = Color;
 }

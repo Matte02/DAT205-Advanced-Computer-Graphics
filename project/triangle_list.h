@@ -15,6 +15,10 @@ class TriangleList {
 public:
 	TriangleList();
 
+	~TriangleList();
+
+	void Destroy();
+
 	void CreateTriangleList(int Width, int Depth, const BaseTerrain* pTerrain);
 
 	void Render();

@@ -1,0 +1,19 @@
+#pragma once
+
+#include "terrain.h"
+
+class PerlinNoiseTerrain : public BaseTerrain {
+
+public:
+
+	PerlinNoiseTerrain() {
+	};
+
+	void GenerateHeightMap(float lacunarity, float gain, int octaves, float offset, float sampleScale, float heightScale);
+
+protected:
+
+private:
+
+
+};

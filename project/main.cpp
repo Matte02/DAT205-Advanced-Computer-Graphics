@@ -21,8 +21,10 @@ using namespace glm;
 #include <Model.h>
 #include "hdr.h"
 #include "fbo.h"
-#include "../build/project/terrain.h"
+#include "perline_noise_terrain.h"
 
+#include <fstream> // For file handling
+#include <iostream>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Various globals
@@ -32,6 +34,7 @@ float currentTime = 0.0f;
 float previousTime = 0.0f;
 float deltaTime = 0.0f;
 int windowWidth, windowHeight;
+bool isWireframe = false;
 
 // Mouse input
 ivec2 g_prevMouseCoords = { -1, -1 };
@@ -65,7 +68,7 @@ float point_light_intensity_multiplier = 10000.0f;
 ///////////////////////////////////////////////////////////////////////////////
 // Camera parameters.
 ///////////////////////////////////////////////////////////////////////////////
-vec3 cameraPosition(-70.0f, 50.0f, 70.0f);
+vec3 cameraPosition(140.0f, 50.0f, 140.0f);
 vec3 cameraDirection = normalize(vec3(0.0f) - cameraPosition);
 float cameraSpeed = 10.f;
 
@@ -74,8 +77,23 @@ vec3 worldUp(0.0f, 1.0f, 0.0f);
 ///////////////////////////////////////////////////////////////////////////////
 // Models
 ///////////////////////////////////////////////////////////////////////////////
-BaseTerrain m_terrain;
+PerlinNoiseTerrain m_terrain;
 
+// Terrain Generation Variables:
+static float worldScale = 4;
+static float offset = 0;
+static int worldSize = 256;
+static int octaves = 6;
+static float gain = 0.5;
+static float lacunarity = 2.0;
+static float sampleScale = 0.01;
+static int heightScale = 100;
+
+void generateTerrain() {
+	m_terrain.Destroy();
+	m_terrain.InitTerrain(worldScale, worldSize);
+	m_terrain.GenerateHeightMap(lacunarity, gain, octaves, offset, sampleScale, heightScale);
+}
 
 void loadShaders(bool is_reload)
 {
@@ -114,7 +132,8 @@ void initialize()
 	///////////////////////////////////////////////////////////////////////
 	// Load models and set up model matrices
 	///////////////////////////////////////////////////////////////////////
-	m_terrain.InitTerrain(4.0f);
+	generateTerrain();
+
 
 	///////////////////////////////////////////////////////////////////////
 	// Load environment map
@@ -257,6 +276,19 @@ bool handleEvents(void)
 				labhelper::showGUI();
 			}
 		}
+
+		if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_f)
+		{
+			isWireframe = !isWireframe;
+
+			if (isWireframe) {
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			}
+			else {
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+		}
+
 		if(event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT
 		   && (!labhelper::isGUIvisible() || !ImGui::GetIO().WantCaptureMouse))
 		{
@@ -320,6 +352,110 @@ bool handleEvents(void)
 }
 
 
+void saveSettings() {
+	std::ofstream file("terrain_settings.txt");
+	if (file.is_open()) {
+		file << worldScale << "\n";
+		file << worldSize << "\n";
+		file << offset << "\n";
+		file << octaves << "\n";
+		file << gain << "\n";
+		file << lacunarity << "\n";
+		file << sampleScale << "\n";
+		file << heightScale << "\n";
+		file.close();
+	}
+}
+
+void loadSettings() {
+	std::ifstream file("terrain_settings.txt");
+	if (file.is_open()) {
+		// Attempt to read settings from the file
+		if (file >> worldScale >> worldSize >> offset >> octaves >> gain >> lacunarity >> sampleScale >> heightScale) {
+			// Check if all variables were successfully read
+			std::string extra;
+			if (file >> extra) {
+				// If there's extra content in the file, inform the user and prompt them to save a new file
+				std::cerr << "Error: Unexpected content in settings file. Please save a new file." << std::endl;
+			}
+			else {
+				// Close the file if all variables were successfully read
+				file.close();
+				return;
+			}
+		}
+		else {
+			// If any reading operation fails, inform the user and prompt them to save a new file
+			std::cerr << "Error: Unable to read settings from file. Please save a new file." << std::endl;
+		}
+
+		// Close the file
+		file.close();
+	}
+	else {
+		// If file opening fails, display an error message
+		std::cerr << "Error opening settings file" << std::endl;
+	}
+}
+
+
+void renderTerrainUI() {
+	static bool showTable = false;
+	if (ImGui::CollapsingHeader("Terrain Generation")) {
+		ImGui::Indent();
+
+		// World Scale
+		ImGui::Text("World Scale:");
+		if (ImGui::SliderFloat("##World Scale", &worldScale, 0.0, 100.0))
+			generateTerrain();
+
+		// World Size
+		ImGui::Text("World Size:");
+		if (ImGui::SliderInt("##World Size", &worldSize, 1, 2048))
+			generateTerrain();
+
+		// Perlin Noise Parameters
+		ImGui::Text("Offset:");
+		if (ImGui::SliderFloat("##Offset", &offset, 0, 2.0))
+			generateTerrain();
+
+		ImGui::Text("Octaves:");
+		if (ImGui::SliderInt("##Octaves", &octaves, 0, 10))
+			generateTerrain();
+
+		ImGui::Text("Gain:");
+		if (ImGui::SliderFloat("##Gain", &gain, 0.0, 2.0))
+			generateTerrain();
+
+		ImGui::Text("Lacunarity:");
+		if (ImGui::SliderFloat("##Lacunarity", &lacunarity, 0.0, 25.0))
+			generateTerrain();
+
+		ImGui::Text("Sample Scale:");
+		if (ImGui::SliderFloat("##SampleScale", &sampleScale, 0.0, 1.0))
+			generateTerrain();
+
+		ImGui::Text("Height Scale:");
+		if (ImGui::SliderInt("##Height Scale", &heightScale, 0, 1000))
+			generateTerrain();
+
+		if (ImGui::Button("Save Settings")) {
+			saveSettings();
+		}
+
+		ImGui::SameLine();
+		if (ImGui::Button("Load Settings")) {
+			loadSettings();
+			generateTerrain(); // Regenerate terrain after loading settings
+		}
+
+		ImGui::Unindent();
+	}
+}
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 /// This function is to hold the general GUI logic
 ///////////////////////////////////////////////////////////////////////////////
@@ -331,11 +467,19 @@ void gui()
 	// ----------------------------------------------------------
 
 
+	if (labhelper::isGUIvisible()) {
+		renderTerrainUI();
+	}
+
 	////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////
 
 	labhelper::perf::drawEventsWindow();
+
+
 }
+
+
 
 int main(int argc, char* argv[])
 {

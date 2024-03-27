@@ -20,6 +20,7 @@ find_package ( OpenGL REQUIRED )
 
 # Build and link library.
 add_library ( ${PROJECT_NAME} 
+    array2d.h
     labhelper.h 
     labhelper.cpp 
     Model.h

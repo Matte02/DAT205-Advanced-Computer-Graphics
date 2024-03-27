@@ -9,6 +9,27 @@ TriangleList::TriangleList()
 {
 }
 
+TriangleList::~TriangleList()
+{
+	Destroy();
+}
+
+
+void TriangleList::Destroy()
+{
+	if (m_vao > 0) {
+		glDeleteVertexArrays(1, &m_vao);
+	}
+
+	if (m_vb > 0) {
+		glDeleteBuffers(1, &m_vb);
+	}
+
+	if (m_ib > 0) {
+		glDeleteBuffers(1, &m_ib);
+	}
+}
+
 
 void TriangleList::CreateTriangleList(int Width, int Depth, const BaseTerrain* pTerrain)
 {
@@ -129,8 +150,8 @@ void TriangleList::Render()
 {
 	glBindVertexArray(m_vao);
 
-	glDrawArrays(GL_POINTS, 0, m_depth * m_width);
-	//glDrawElements(GL_TRIANGLES, (m_depth - 1) * (m_width - 1) * 6, GL_UNSIGNED_INT, NULL);
+	//glDrawArrays(GL_POINTS, 0, m_depth * m_width);
+	glDrawElements(GL_TRIANGLES, (m_depth - 1) * (m_width - 1) * 6, GL_UNSIGNED_INT, NULL);
 
 	glBindVertexArray(0);
 }
