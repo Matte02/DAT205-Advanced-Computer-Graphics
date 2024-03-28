@@ -27,7 +27,6 @@ void main()
     float height_ratio = mapHeightToColor(Position.y);
     float c = height_ratio * 0.8 + 0.2;
 	Color = vec4(c, c ,c, 1.0);
-    Tex = InTex;
     Pos = Position;
     WorldNormal = Normal;
     HeightRatio = height_ratio;

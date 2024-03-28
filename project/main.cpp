@@ -98,6 +98,8 @@ static float sampleScale = 0.01;
 static int maxHeight = 100;
 static int wrap = 0;
 
+
+labhelper::Model* sphereModel = nullptr;
 void generateTerrain() {
 	m_terrain.Destroy();
 	m_terrain.InitTerrain(worldScale, worldSize, textureScale, textFilenames);
@@ -156,7 +158,7 @@ void initialize()
 	///////////////////////////////////////////////////////////////////////
 	// Load models and set up model matrices
 	///////////////////////////////////////////////////////////////////////
-
+	sphereModel = labhelper::loadModelFromOBJ("../scenes/sphere.obj");
 
 	///////////////////////////////////////////////////////////////////////
 	// Load environment map
@@ -168,6 +170,48 @@ void initialize()
 
 	glEnable(GL_DEPTH_TEST); // enable Z-buffering
 	glEnable(GL_CULL_FACE);  // enables backface culling
+}
+
+void debugDrawLight(const glm::mat4& viewMatrix,
+	const glm::mat4& projectionMatrix,
+	const glm::vec3& worldSpaceLightPos)
+{
+	mat4 modelMatrix = glm::translate(worldSpaceLightPos);
+	glUseProgram(shaderProgram);
+	labhelper::setUniformSlow(shaderProgram, "modelViewProjectionMatrix",
+		projectionMatrix * viewMatrix * modelMatrix);
+	labhelper::render(sphereModel);
+}
+
+
+void drawScene(GLuint currentShaderProgram,
+	const mat4& viewMatrix,
+	const mat4& projectionMatrix,
+	const mat4& lightViewMatrix,
+	const mat4& lightProjectionMatrix) 
+{
+
+	// Light source
+	/*
+	vec4 viewSpaceLightPosition = viewMatrix * vec4(lightPosition, 1.0f);
+	labhelper::setUniformSlow(currentShaderProgram, "point_light_color", point_light_color);
+	labhelper::setUniformSlow(currentShaderProgram, "point_light_intensity_multiplier",
+		point_light_intensity_multiplier);
+	labhelper::setUniformSlow(currentShaderProgram, "viewSpaceLightPosition", vec3(viewSpaceLightPosition)); */
+
+	glUseProgram(currentShaderProgram);
+	labhelper::setUniformSlow(currentShaderProgram, "reversedLightDir", normalize(vec3(-lightPosition)));
+
+	m_terrain.Render(viewMatrix, projectionMatrix, currentShaderProgram);
+}
+
+void drawBackground(const mat4& viewMatrix, const mat4& projectionMatrix)
+{
+	glUseProgram(backgroundProgram);
+	labhelper::setUniformSlow(backgroundProgram, "environment_multiplier", environment_multiplier);
+	labhelper::setUniformSlow(backgroundProgram, "inv_PV", inverse(projectionMatrix * viewMatrix));
+	labhelper::setUniformSlow(backgroundProgram, "camera_pos", cameraPosition);
+	labhelper::drawFullScreenQuad();
 }
 
 
@@ -198,7 +242,7 @@ void display(void)
 	mat4 projMatrix = perspective(radians(45.0f), float(windowWidth) / float(windowHeight), 5.0f, 2000.0f);
 	mat4 viewMatrix = lookAt(cameraPosition, cameraPosition + cameraDirection, worldUp);
 
-	vec4 lightStartPosition = vec4(40.0f, 40.0f, 0.0f, 1.0f);
+	vec4 lightStartPosition = vec4(400.0f, 400.0f, 0.0f, 1.0f);
 	lightPosition = vec3(rotate(currentTime, worldUp) * lightStartPosition);
 	mat4 lightViewMatrix = lookAt(lightPosition, vec3(0.0f), worldUp);
 	mat4 lightProjMatrix = perspective(radians(45.0f), 1.0f, 25.0f, 100.0f);
@@ -218,10 +262,16 @@ void display(void)
 	glViewport(0, 0, windowWidth, windowHeight);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	{
+		labhelper::perf::Scope s("Background");
+		drawBackground(viewMatrix, projMatrix);
+	}
 
-
-	m_terrain.Render(viewMatrix, projMatrix, singleTexProgram);
-
+	{
+		labhelper::perf::Scope s("Scene");
+		drawScene(singleTexProgram, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix);
+	}
+	//debugDrawLight(viewMatrix, projMatrix, vec3(lightPosition));
 }
 
 

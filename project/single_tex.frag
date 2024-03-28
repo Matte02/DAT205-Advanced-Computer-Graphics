@@ -12,6 +12,8 @@ layout(binding = 8) uniform sampler2D SnowTexture;
 layout(binding = 9) uniform sampler2D CliffTexture;
 layout(binding = 10) uniform sampler2D SnowCliffTexture;
 
+// Light
+uniform vec3 reversedLightDir;
 
 uniform float TextureScale;
 
@@ -26,7 +28,6 @@ uniform float slopeThreshold;
 uniform float slopeMixRange;
 
 in vec4 Color;
-in vec2 Tex;
 in vec3 Pos;
 in vec3 WorldNormal;
 in float HeightRatio;
@@ -101,12 +102,19 @@ vec4 calculateSlopeColor(bool useTrilinarMapping) {
 
 void main()
 {
+    vec3 Normal = normalize(WorldNormal);
     vec4 finalColor;
-    float slope = degrees(dot(normalize(WorldNormal), vec3(0.0, 1.0, 0.0)));
+    float slope = degrees(dot(Normal, vec3(0.0, 1.0, 0.0)));
     bool useTrilinarMapping = (slope > slopeThreshold) && (slope < (slopeThreshold + slopeMixRange));
     vec4 heightColor = calculateHeightColor(useTrilinarMapping);
     vec4 slopeColor = calculateSlopeColor(useTrilinarMapping);
     float blendFactor = smoothstep(slopeThreshold, slopeThreshold+slopeMixRange, slope);
     finalColor = mix(slopeColor, heightColor, blendFactor);
-    fragmentColor = finalColor;
+
+    //Light
+    float Diffuse = dot(Normal, -reversedLightDir);
+
+    Diffuse = max(0.3, Diffuse);
+
+    fragmentColor = Color * finalColor * Diffuse;
 }
