@@ -7,8 +7,11 @@
   },
   "ExpandedNodes": [
     "",
+    "\\build",
+    "\\external_src",
+    "\\external_src\\stb-master",
     "\\project"
   ],
-  "SelectedNode": "\\project\\triangle_list.h",
+  "SelectedNode": "\\build\\opengl-base-project.sln",
   "PreviewInSolutionExplorer": false
 }

@@ -46,6 +46,7 @@ bool g_isMouseDragging = false;
 GLuint shaderProgram;       // Shader for rendering the final image
 GLuint simpleShaderProgram; // Shader used to draw the shadow map
 GLuint backgroundProgram;
+GLuint singleTexProgram;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Environment
@@ -79,6 +80,13 @@ vec3 worldUp(0.0f, 1.0f, 0.0f);
 ///////////////////////////////////////////////////////////////////////////////
 PerlinNoiseTerrain m_terrain;
 
+// Terrain Texture
+std::vector<std::string> textFilenames = {};
+static float textureScale = 0.035;
+std::vector<float> heightThresholds = {0.1, 0.3, 0.6, 0.9};
+static float slopeThreshold = 35.0;
+static float slopeRange = 12.5;
+
 // Terrain Generation Variables:
 static float worldScale = 4;
 static float offset = 0;
@@ -92,7 +100,7 @@ static int wrap = 0;
 
 void generateTerrain() {
 	m_terrain.Destroy();
-	m_terrain.InitTerrain(worldScale, worldSize);
+	m_terrain.InitTerrain(worldScale, worldSize, textureScale, textFilenames);
 	m_terrain.GenerateHeightMap(lacunarity, gain, octaves, offset, sampleScale, maxHeight, wrap);
 }
 
@@ -115,6 +123,21 @@ void loadShaders(bool is_reload)
 	{
 		shaderProgram = shader;
 	}
+
+	shader = labhelper::loadShaderProgram("../project/single_tex.vert", "../project/single_tex.frag", is_reload);
+	if (shader != 0)
+	{
+		singleTexProgram = shader;
+	}
+}
+
+void initTextures() {
+	textFilenames.push_back("desert_sand_d.jpg");
+	textFilenames.push_back("grass_green_d.jpg");
+	textFilenames.push_back("mntn_dark_d.jpg");
+	textFilenames.push_back("snow1_d.jpg");
+	textFilenames.push_back("mntn_brown_d.jpg");
+	textFilenames.push_back("snow_mntn2_d.jpg");
 }
 
 
@@ -133,67 +156,18 @@ void initialize()
 	///////////////////////////////////////////////////////////////////////
 	// Load models and set up model matrices
 	///////////////////////////////////////////////////////////////////////
-	generateTerrain();
 
 
 	///////////////////////////////////////////////////////////////////////
 	// Load environment map
 	///////////////////////////////////////////////////////////////////////
 	environmentMap = labhelper::loadHdrTexture("../scenes/envmaps/" + envmap_base_name + ".hdr");
-
+	initTextures();
+	m_terrain.setSlope(slopeThreshold, slopeRange);
+	generateTerrain();
 
 	glEnable(GL_DEPTH_TEST); // enable Z-buffering
 	glEnable(GL_CULL_FACE);  // enables backface culling
-}
-
-void debugDrawLight(const glm::mat4& viewMatrix,
-                    const glm::mat4& projectionMatrix,
-                    const glm::vec3& worldSpaceLightPos)
-{
-	mat4 modelMatrix = glm::translate(worldSpaceLightPos);
-	glUseProgram(shaderProgram);
-	labhelper::setUniformSlow(shaderProgram, "modelViewProjectionMatrix",
-	                          projectionMatrix * viewMatrix * modelMatrix);
-	// labhelper::render(sphereModel);
-}
-
-
-void drawBackground(const mat4& viewMatrix, const mat4& projectionMatrix)
-{
-	glUseProgram(backgroundProgram);
-	labhelper::setUniformSlow(backgroundProgram, "environment_multiplier", environment_multiplier);
-	labhelper::setUniformSlow(backgroundProgram, "inv_PV", inverse(projectionMatrix * viewMatrix));
-	labhelper::setUniformSlow(backgroundProgram, "camera_pos", cameraPosition);
-	labhelper::drawFullScreenQuad();
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-/// This function is used to draw the main objects on the scene
-///////////////////////////////////////////////////////////////////////////////
-void drawScene(GLuint currentShaderProgram,
-               const mat4& viewMatrix,
-               const mat4& projectionMatrix,
-               const mat4& lightViewMatrix,
-               const mat4& lightProjectionMatrix)
-{
-	glUseProgram(currentShaderProgram);
-	// Light source
-	vec4 viewSpaceLightPosition = viewMatrix * vec4(lightPosition, 1.0f);
-	labhelper::setUniformSlow(currentShaderProgram, "point_light_color", point_light_color);
-	labhelper::setUniformSlow(currentShaderProgram, "point_light_intensity_multiplier",
-	                          point_light_intensity_multiplier);
-	labhelper::setUniformSlow(currentShaderProgram, "viewSpaceLightPosition", vec3(viewSpaceLightPosition));
-	labhelper::setUniformSlow(currentShaderProgram, "viewSpaceLightDir",
-	                          normalize(vec3(viewMatrix * vec4(-lightPosition, 0.0f))));
-
-
-	// Environment
-	labhelper::setUniformSlow(currentShaderProgram, "environment_multiplier", environment_multiplier);
-
-	// camera
-	labhelper::setUniformSlow(currentShaderProgram, "viewInverse", inverse(viewMatrix));
-
 }
 
 
@@ -245,7 +219,8 @@ void display(void)
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_terrain.Render(projMatrix * viewMatrix, simpleShaderProgram);
+
+	m_terrain.Render(viewMatrix, projMatrix, singleTexProgram);
 
 }
 
@@ -403,6 +378,51 @@ void loadSettings() {
 
 void renderTerrainUI() {
 	static bool showTable = false;
+	if (ImGui::CollapsingHeader("Texture")) {
+		ImGui::Indent();
+		// World Scale
+		ImGui::Text("Texture Scale:");
+		// I want to add a tool tip for this slider
+		if (ImGui::SliderFloat("##Texture Scale", &textureScale, 0.0, 0.1))
+			generateTerrain();
+		if (ImGui::CollapsingHeader("Height Thresholds")) {
+			ImGui::Indent();
+			ImGui::Text("Keep the height values in order. I.e 1 should be lower than 2.");
+			ImGui::Text("Height 1:");
+			if (ImGui::SliderFloat("##Height 1", &heightThresholds[0], 0.0, 1)) {
+				m_terrain.setTerrainHeights(heightThresholds);
+				generateTerrain();
+			}
+			ImGui::Text("Height 2:");
+			if (ImGui::SliderFloat("##Height 2", &heightThresholds[1], 0.0, 1)) {
+				m_terrain.setTerrainHeights(heightThresholds);
+				generateTerrain();
+			}
+			ImGui::Text("Height 3:");
+			if (ImGui::SliderFloat("##Height 3", &heightThresholds[2], 0.0, 1)) {
+				m_terrain.setTerrainHeights(heightThresholds);
+				generateTerrain();
+			}
+			ImGui::Text("Height 4:");
+			if (ImGui::SliderFloat("##Height 4", &heightThresholds[3], 0.0, 1)) {
+				m_terrain.setTerrainHeights(heightThresholds);
+				generateTerrain();
+			}
+			ImGui::Unindent();
+		}
+		ImGui::Text("Slope");
+		if (ImGui::SliderFloat("##Slope", &slopeThreshold, 0.0, 90.0)) {
+			m_terrain.setSlope(slopeThreshold, slopeRange);
+			generateTerrain();
+		}
+		ImGui::Text("Slope Range");
+		if (ImGui::SliderFloat("##Slope Range", &slopeRange, 0.0, 90.0)) {
+			m_terrain.setSlope(slopeThreshold, slopeRange);
+			generateTerrain();
+		}
+		ImGui::Unindent();
+	}
+
 	if (ImGui::CollapsingHeader("Terrain Generation")) {
 		ImGui::Indent();
 
@@ -419,7 +439,7 @@ void renderTerrainUI() {
 
 		// Perlin Noise Parameters
 		ImGui::Text("Offset:");
-		if (ImGui::SliderFloat("##Offset", &offset, 0, 4.0))
+		if (ImGui::SliderFloat("##Offset", &offset, 0, 100000.0))
 			generateTerrain();
 
 		ImGui::Text("Octaves:");

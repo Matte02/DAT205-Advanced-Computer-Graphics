@@ -57,6 +57,9 @@ bool Texture::load(const std::string& _directory, const std::string& _filename, 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
 
 	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	// Free texture data after OpenGL texture creation
+	stbi_image_free(data);
 	return true;
 }
 

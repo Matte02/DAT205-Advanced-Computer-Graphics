@@ -27,6 +27,8 @@ private:
 
 	struct Vertex {
 		vec3 Pos;
+		vec2 Tex;
+		vec3 Norm = vec3(0.0f, 0.0f, 0.0f);
 
 		void InitVertex(const BaseTerrain* pTerrain, int x, int z);
 	};
@@ -36,6 +38,7 @@ private:
 	void PopulateBuffers(const BaseTerrain* pTerrain);
 	void InitVertices(const BaseTerrain* pTerrain, std::vector<Vertex>& Vertices);
 	void InitIndices(std::vector<uint>& Indices);
+	void CalcNormals(std::vector<Vertex>& Vertices, std::vector<uint>& Indices);
 
 	int m_width = 0;
 	int m_depth = 0;
