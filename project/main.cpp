@@ -47,6 +47,7 @@ GLuint shaderProgram;       // Shader for rendering the final image
 GLuint simpleShaderProgram; // Shader used to draw the shadow map
 GLuint backgroundProgram;
 GLuint singleTexProgram;
+GLuint normalTexShader;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Environment
@@ -71,7 +72,7 @@ float point_light_intensity_multiplier = 10000.0f;
 ///////////////////////////////////////////////////////////////////////////////
 vec3 cameraPosition(140.0f, 50.0f, 140.0f);
 vec3 cameraDirection = normalize(vec3(0.0f) - cameraPosition);
-float cameraSpeed = 10.f;
+float cameraSpeed = 50.f;
 
 vec3 worldUp(0.0f, 1.0f, 0.0f);
 
@@ -82,19 +83,22 @@ PerlinNoiseTerrain m_terrain;
 
 // Terrain Texture
 std::vector<std::string> textFilenames = {};
-static float textureScale = 0.035;
+static float textureScale = 0.070;
 std::vector<float> heightThresholds = {0.1, 0.3, 0.6, 0.9};
 static float slopeThreshold = 35.0;
 static float slopeRange = 12.5;
 
+static int shaderProgramToUse = 1;
+bool moveSun = true;
+
 // Terrain Generation Variables:
-static float worldScale = 4;
+static float worldScale = 1;
 static float offset = 0;
-static int worldSize = 256;
+static int worldSize = 1024;
 static int octaves = 6;
-static float gain = 0.5;
-static float lacunarity = 2.0;
-static float sampleScale = 0.01;
+static float gain = 0.450;
+static float lacunarity = 2.1;
+static float sampleScale = 0.2;
 static int maxHeight = 100;
 static int wrap = 0;
 
@@ -103,7 +107,7 @@ labhelper::Model* sphereModel = nullptr;
 void generateTerrain() {
 	m_terrain.Destroy();
 	m_terrain.InitTerrain(worldScale, worldSize, textureScale, textFilenames);
-	m_terrain.GenerateHeightMap(lacunarity, gain, octaves, offset, sampleScale, maxHeight, wrap);
+	m_terrain.GenerateHeightMap(lacunarity, gain, octaves, offset, sampleScale/100, maxHeight, wrap);
 }
 
 void loadShaders(bool is_reload)
@@ -131,6 +135,11 @@ void loadShaders(bool is_reload)
 	{
 		singleTexProgram = shader;
 	}
+	shader = labhelper::loadShaderProgram("../project/single_tex.vert", "../project/simple_with_norm.frag", is_reload);
+	if (shader != 0)
+	{
+		normalTexShader = shader;
+	}
 }
 
 void initTextures() {
@@ -140,6 +149,15 @@ void initTextures() {
 	textFilenames.push_back("snow1_d.jpg");
 	textFilenames.push_back("mntn_brown_d.jpg");
 	textFilenames.push_back("snow_mntn2_d.jpg");
+}
+
+void initTextureNormals() {
+	textFilenames.push_back("desert_sand_n.jpg");
+	textFilenames.push_back("grass_green_n.jpg");
+	textFilenames.push_back("mntn_dark_n.jpg");
+	textFilenames.push_back("snow1_n.jpg");
+	textFilenames.push_back("mntn_brown_n.jpg");
+	textFilenames.push_back("snow_mntn2_n.jpg");
 }
 
 
@@ -165,6 +183,7 @@ void initialize()
 	///////////////////////////////////////////////////////////////////////
 	environmentMap = labhelper::loadHdrTexture("../scenes/envmaps/" + envmap_base_name + ".hdr");
 	initTextures();
+	initTextureNormals();
 	m_terrain.setSlope(slopeThreshold, slopeRange);
 	generateTerrain();
 
@@ -243,7 +262,8 @@ void display(void)
 	mat4 viewMatrix = lookAt(cameraPosition, cameraPosition + cameraDirection, worldUp);
 
 	vec4 lightStartPosition = vec4(400.0f, 400.0f, 0.0f, 1.0f);
-	lightPosition = vec3(rotate(currentTime, worldUp) * lightStartPosition);
+	if (moveSun)
+		lightPosition = vec3(rotate(currentTime, worldUp) * lightStartPosition);
 	mat4 lightViewMatrix = lookAt(lightPosition, vec3(0.0f), worldUp);
 	mat4 lightProjMatrix = perspective(radians(45.0f), 1.0f, 25.0f, 100.0f);
 
@@ -268,8 +288,14 @@ void display(void)
 	}
 
 	{
+
 		labhelper::perf::Scope s("Scene");
-		drawScene(singleTexProgram, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix);
+		if (shaderProgramToUse == 0) {
+			drawScene(normalTexShader, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix);
+		}
+		else {
+			drawScene(singleTexProgram, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix);
+		}
 	}
 	//debugDrawLight(viewMatrix, projMatrix, vec3(lightPosition));
 }
@@ -431,8 +457,13 @@ void renderTerrainUI() {
 	if (ImGui::CollapsingHeader("Texture")) {
 		ImGui::Indent();
 		// World Scale
+		ImGui::Text("Move sun:");
+		if (ImGui::Checkbox("##Move Sun", &moveSun))
+
+		ImGui::Text("Shader Program:");
+		if (ImGui::SliderInt("##Shader Program", &shaderProgramToUse, 0, 1))
+
 		ImGui::Text("Texture Scale:");
-		// I want to add a tool tip for this slider
 		if (ImGui::SliderFloat("##Texture Scale", &textureScale, 0.0, 0.1))
 			generateTerrain();
 		if (ImGui::CollapsingHeader("Height Thresholds")) {
@@ -505,7 +536,7 @@ void renderTerrainUI() {
 			generateTerrain();
 
 		ImGui::Text("Sample Scale:");
-		if (ImGui::SliderFloat("##SampleScale", &sampleScale, 0.0, 0.3))
+		if (ImGui::SliderFloat("##SampleScale", &sampleScale, 0.0, 10))
 			generateTerrain();
 
 		ImGui::Text("Height Scale:");

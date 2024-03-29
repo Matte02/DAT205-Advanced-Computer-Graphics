@@ -19,7 +19,11 @@ void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScal
     m_textureScale = TextureScale;
     
     m_heightMap.InitArray2D(m_terrainSize, m_terrainSize, 0.0f);
-    InitTextures(TextureFilenames);
+
+    std::vector<std::string> textureNames(TextureFilenames.begin(), TextureFilenames.begin() + TextureFilenames.size() / 2);
+    std::vector<std::string> TextureNormalNames(TextureFilenames.begin() + TextureFilenames.size() / 2, TextureFilenames.end());
+    InitTextures(textureNames, m_pTextures);
+    InitTextures(textureNames, m_pTextureNormals);
 }
 
 
@@ -36,7 +40,7 @@ void BaseTerrain::setSlope(const float slope, const float slopeRange)
     m_slopeRange = slopeRange;
 }
 
-void BaseTerrain::InitTextures(const std::vector<std::string>& TextureFilenames) {
+void BaseTerrain::InitTextures(const std::vector<std::string>& TextureFilenames, labhelper::Texture TextureArray[]) {
     if (TextureFilenames.size() != 6) {
         printf("%s:%d - number of provided textures (%llu) is not equal to the size of the texture array (%i)\n",
             __FILE__, __LINE__, TextureFilenames.size(), 6);
@@ -45,11 +49,10 @@ void BaseTerrain::InitTextures(const std::vector<std::string>& TextureFilenames)
     int i = 0;
     for (std::string filename : TextureFilenames) {
         labhelper::Texture tex;
-        if (!tex.load("../scenes/Textures/", filename, 4)) {
+        if (!TextureArray[i++].load("../scenes/Textures/", filename, 4)) {
             printf("%s:%d - Failed to load texture (%s) \n", __FILE__, __LINE__, filename.c_str());
             exit(0);
         }
-        m_pTextures[i++] = tex;
     }
 }
 
@@ -67,8 +70,11 @@ void BaseTerrain::Destroy()
         if (m_pTextures[i].valid && m_pTextures[i].gl_id != 0) {
             glDeleteTextures(1, &m_pTextures[i].gl_id);
             m_pTextures[i].gl_id = 0; 
+            glDeleteTextures(1, &m_pTextureNormals[i].gl_id);
+            m_pTextureNormals[i].gl_id = 0;
         }
     }
+
 }
 
 
@@ -98,6 +104,10 @@ void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projMatrix, GLuint cu
     for (int i = 0x0; i < 6; i++) {
          glActiveTexture(GL_TEXTURE5+i);
          glBindTexture(GL_TEXTURE_2D, m_pTextures[i].gl_id);
+    }
+    for (int i = 0x0; i < 6; i++) {
+        glActiveTexture(GL_TEXTURE11 + i);
+        glBindTexture(GL_TEXTURE_2D, m_pTextureNormals[i].gl_id);
     }
 
     m_triangleList.Render();

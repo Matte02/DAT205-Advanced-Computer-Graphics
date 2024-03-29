@@ -53,48 +53,44 @@ vec4 triplanarMapping (sampler2D textureToUse, vec3 normal, vec3 position) {
 }
 
 
-vec4 getColor(sampler2D textureToUse, bool useTrilinarMapping) {
-    if (useTrilinarMapping) {
-        return triplanarMapping(textureToUse, WorldNormal, Pos);
-    } else {
-        return texture2D(textureToUse, Pos.xz*TextureScale);
-    }
+vec4 getColor(sampler2D textureToUse) {
+    return triplanarMapping(textureToUse, WorldNormal, Pos);
 }
 
 
-vec4 calculateHeightColor(bool useTrilinarMapping) {
+vec4 calculateHeightColor() {
     float height = HeightRatio;
     vec4 heightColor;
     if (height < height0) {
-        heightColor = triplanarMapping(SandTexture, WorldNormal, Pos);
+        heightColor = getColor(SandTexture);
     } else if (height < height1) {
-        heightColor = mix(getColor(SandTexture, useTrilinarMapping),
-                         getColor(GrassTexture, useTrilinarMapping),
+        heightColor = mix(getColor(SandTexture),
+                         getColor(GrassTexture),
                          smoothstep(height0, height1, height));
     } else if (height < height2) {
-        heightColor = mix(getColor(GrassTexture, useTrilinarMapping),
-                         getColor(MountainTexture, useTrilinarMapping),
+        heightColor = mix(getColor(GrassTexture),
+                         getColor(MountainTexture),
                          smoothstep(height1, height2, height));
     } else if (height < height3) {
-        heightColor = mix(getColor(MountainTexture, useTrilinarMapping),
-                         getColor(SnowTexture, useTrilinarMapping),
+        heightColor = mix(getColor(MountainTexture),
+                         getColor(SnowTexture),
                          smoothstep(height2, height3, height));
     } else {
-        heightColor = getColor(SnowTexture, useTrilinarMapping);
+        heightColor = getColor(SnowTexture);
     }
     return heightColor;
 }
 
-vec4 calculateSlopeColor(bool useTrilinarMapping) {
+vec4 calculateSlopeColor() {
     float height = HeightRatio;
     vec4 slopeColor;
     if (height < height2) {
-        slopeColor = getColor(CliffTexture, useTrilinarMapping);
+        slopeColor = getColor(CliffTexture);
     } else if (height > height3) {
-        slopeColor = getColor(SnowCliffTexture, useTrilinarMapping);
+        slopeColor = getColor(SnowCliffTexture);
     } else {
-        slopeColor = mix(getColor(CliffTexture, useTrilinarMapping),
-                         getColor(SnowCliffTexture, useTrilinarMapping),
+        slopeColor = mix(getColor(CliffTexture),
+                         getColor(SnowCliffTexture),
                          smoothstep(height2, height3, height));
     }
     return slopeColor;
@@ -105,9 +101,8 @@ void main()
     vec3 Normal = normalize(WorldNormal);
     vec4 finalColor;
     float slope = degrees(dot(Normal, vec3(0.0, 1.0, 0.0)));
-    bool useTrilinarMapping = (slope > slopeThreshold) && (slope < (slopeThreshold + slopeMixRange));
-    vec4 heightColor = calculateHeightColor(useTrilinarMapping);
-    vec4 slopeColor = calculateSlopeColor(useTrilinarMapping);
+    vec4 heightColor = calculateHeightColor();
+    vec4 slopeColor = calculateSlopeColor();
     float blendFactor = smoothstep(slopeThreshold, slopeThreshold+slopeMixRange, slope);
     finalColor = mix(slopeColor, heightColor, blendFactor);
 

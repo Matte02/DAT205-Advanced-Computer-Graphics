@@ -6,12 +6,8 @@
     ]
   },
   "ExpandedNodes": [
-    "",
-    "\\build",
-    "\\external_src",
-    "\\external_src\\stb-master",
-    "\\project"
+    ""
   ],
-  "SelectedNode": "\\build\\opengl-base-project.sln",
+  "SelectedNode": "\\CMakeLists.txt",
   "PreviewInSolutionExplorer": false
 }

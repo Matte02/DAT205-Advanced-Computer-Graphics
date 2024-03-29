@@ -37,7 +37,7 @@ public:
 
 protected:
 
-	void InitTextures(const std::vector<std::string>& TextureFilenames);
+	void BaseTerrain::InitTextures(const std::vector<std::string>& TextureFilenames, labhelper::Texture TextureArray[]);
 
 	float m_maxHeight = 0;
 	int m_terrainSize = 0;
@@ -49,6 +49,7 @@ protected:
 	float m_slope = 1;
 	float m_slopeRange = 0.5;
 	labhelper::Texture m_pTextures[6] = { 0 };
+	labhelper::Texture m_pTextureNormals[6] = { 0 };
 
 	float m_textureScale = 1.0f;
 };
