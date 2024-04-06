@@ -10,12 +10,24 @@
 #include "labhelper.h"
 #include <Model.h>
 
-//#define DEBUG_PRINT
-
-void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, const std::vector<std::string>& TextureFilenames)
+void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int PatchSizePower, const std::vector<std::string>& TextureFilenames)
 {
+
+
+    m_patchSize = pow(2, PatchSizePower) + 1;
+
+    int i = 0;
+    while (true) {
+        int RecommendedWorldSize = ((WorldSize - i - 1 + m_patchSize - 1) / (m_patchSize - 1)) * (m_patchSize - 1) + 1;
+        i++;
+        if (RecommendedWorldSize <= WorldSize) {
+
+            printf("Setting World Size to: %d\n", RecommendedWorldSize);
+            m_terrainSize = RecommendedWorldSize;
+            break;
+        }
+    }
     m_worldScale = WorldScale;
-    m_terrainSize = WorldSize;
     m_textureScale = TextureScale;
     
     m_heightMap.InitArray2D(m_terrainSize, m_terrainSize, 0.0f);
@@ -64,7 +76,7 @@ BaseTerrain::~BaseTerrain()
 void BaseTerrain::Destroy()
 {
     m_heightMap.Destroy();
-    m_triangleList.Destroy();
+    m_geomipGrid.Destroy();
 
     for (int i = 0; i < 6; i++) {
         if (m_pTextures[i].valid && m_pTextures[i].gl_id != 0) {
@@ -77,13 +89,12 @@ void BaseTerrain::Destroy()
 
 }
 
-
 void BaseTerrain::GenerateHeightMap() {
-    m_triangleList.CreateTriangleList(m_terrainSize, m_terrainSize, this);
+    m_geomipGrid.CreateGeomipGrid(m_terrainSize, m_terrainSize, m_patchSize, this);
 }
 
 
-void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projMatrix, GLuint currentShaderProgram)
+void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projMatrix, GLuint currentShaderProgram, const vec3& CameraPos)
 {
     glUseProgram(currentShaderProgram);
     labhelper::setUniformSlow(currentShaderProgram, "viewMatrix", viewMatrix);
@@ -110,6 +121,6 @@ void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projMatrix, GLuint cu
         glBindTexture(GL_TEXTURE_2D, m_pTextureNormals[i].gl_id);
     }
 
-    m_triangleList.Render();
+    m_geomipGrid.Render(CameraPos);
 }
 

@@ -1,7 +1,7 @@
 #ifndef TERRAIN_H
 #define TERRAIN_H
 
-#include "triangle_list.h"
+#include "geomip_grid.h"
 #include "array2d.h"
 #include <Model.h>
 #include <string>
@@ -15,11 +15,11 @@ public:
 
 	void Destroy();
 
-	void InitTerrain(float WorldScale, int WorldSize, float TextureScale, const std::vector<std::string>& TextureFilenames);
+	void InitTerrain(float WorldScale, int WorldSize, float TextureScale, int PatchSize, const std::vector<std::string>& TextureFilenames);
 
 	void GenerateHeightMap();
 
-	void Render(const mat4 viewMatrix, const mat4 projMatrix, GLuint currentShaderProgram);
+	void Render(const mat4 viewMatrix, const mat4 projMatrix, GLuint currentShaderProgram, const vec3& CameraPos);
 
 	// Returns 
 	float GetHeight(int x, int z) const { return m_heightMap.Get(x, z); }
@@ -35,17 +35,19 @@ public:
 
 	int GetSize() const { return m_terrainSize; }
 
-protected:
 
+
+protected:
 	void BaseTerrain::InitTextures(const std::vector<std::string>& TextureFilenames, labhelper::Texture TextureArray[]);
 
 	float m_maxHeight = 0;
 	int m_terrainSize = 0;
+	int m_patchSize;
 	float m_worldScale = 1.0f;
 	Array2D<float> m_heightMap;
-	TriangleList m_triangleList;
+	GeomipGrid m_geomipGrid;
 
-	float m_pTerrainHeghts[4] = { 0.1, 0.3, 0.6, 0.9 };
+	float m_pTerrainHeghts[4] = { 0.1f, 0.3f, 0.6f, 0.9f };
 	float m_slope = 1;
 	float m_slopeRange = 0.5;
 	labhelper::Texture m_pTextures[6] = { 0 };

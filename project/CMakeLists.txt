@@ -20,7 +20,12 @@ add_executable ( ${PROJECT_NAME}
 	triangle_list.h
     ${SHADERS}
     perline_noise_terrain.h
-    perline_noise_terrain.cpp)
+    perline_noise_terrain.cpp
+    geomip_grid.h
+    geomip_grid.cpp
+    lod_manager.cpp
+    lod_manager.h)
+   
 
 target_link_libraries ( ${PROJECT_NAME} labhelper )
 config_build_output()

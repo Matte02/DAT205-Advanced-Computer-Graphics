@@ -6,8 +6,10 @@
     ]
   },
   "ExpandedNodes": [
-    ""
+    "",
+    "\\build",
+    "\\project"
   ],
-  "SelectedNode": "\\CMakeLists.txt",
+  "SelectedNode": "\\build\\opengl-base-project.sln",
   "PreviewInSolutionExplorer": false
 }

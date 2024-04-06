@@ -95,6 +95,7 @@ bool moveSun = true;
 static float worldScale = 1;
 static float offset = 0;
 static int worldSize = 1024;
+static int patchSize = 5;
 static int octaves = 6;
 static float gain = 0.450;
 static float lacunarity = 2.1;
@@ -106,7 +107,7 @@ static int wrap = 0;
 labhelper::Model* sphereModel = nullptr;
 void generateTerrain() {
 	m_terrain.Destroy();
-	m_terrain.InitTerrain(worldScale, worldSize, textureScale, textFilenames);
+	m_terrain.InitTerrain(worldScale, worldSize, textureScale, patchSize, textFilenames);
 	m_terrain.GenerateHeightMap(lacunarity, gain, octaves, offset, sampleScale/100, maxHeight, wrap);
 }
 
@@ -221,7 +222,7 @@ void drawScene(GLuint currentShaderProgram,
 	glUseProgram(currentShaderProgram);
 	labhelper::setUniformSlow(currentShaderProgram, "reversedLightDir", normalize(vec3(-lightPosition)));
 
-	m_terrain.Render(viewMatrix, projectionMatrix, currentShaderProgram);
+	m_terrain.Render(viewMatrix, projectionMatrix, currentShaderProgram, cameraPosition);
 }
 
 void drawBackground(const mat4& viewMatrix, const mat4& projectionMatrix)
@@ -291,10 +292,13 @@ void display(void)
 
 		labhelper::perf::Scope s("Scene");
 		if (shaderProgramToUse == 0) {
-			drawScene(normalTexShader, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix);
+			drawScene(simpleShaderProgram, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix);
+		}
+		else if (shaderProgramToUse == 1) {
+			drawScene(singleTexProgram, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix);
 		}
 		else {
-			drawScene(singleTexProgram, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix);
+			drawScene(normalTexShader, viewMatrix, projMatrix, lightViewMatrix, lightProjMatrix);
 		}
 	}
 	//debugDrawLight(viewMatrix, projMatrix, vec3(lightPosition));
@@ -461,7 +465,7 @@ void renderTerrainUI() {
 		if (ImGui::Checkbox("##Move Sun", &moveSun))
 
 		ImGui::Text("Shader Program:");
-		if (ImGui::SliderInt("##Shader Program", &shaderProgramToUse, 0, 1))
+		if (ImGui::SliderInt("##Shader Program", &shaderProgramToUse, 0, 2))
 
 		ImGui::Text("Texture Scale:");
 		if (ImGui::SliderFloat("##Texture Scale", &textureScale, 0.0, 0.1))
@@ -509,44 +513,51 @@ void renderTerrainUI() {
 
 		// World Scale
 		ImGui::Text("World Scale:");
-		// I want to add a tool tip for this slider
 		if (ImGui::SliderFloat("##World Scale", &worldScale, 0.0, 20.0))
-			generateTerrain();
+			; // Do nothing here, as we'll generate terrain only when the button is pressed
 
 		// World Size
 		ImGui::Text("World Size:");
 		if (ImGui::SliderInt("##World Size", &worldSize, 1, 2048))
-			generateTerrain();
+			; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+		// World Size
+		ImGui::Text("Patch Size:");
+		if (ImGui::SliderInt("##Patch Size", &patchSize, 2, 7))
+			;
 
 		// Perlin Noise Parameters
 		ImGui::Text("Offset:");
 		if (ImGui::SliderFloat("##Offset", &offset, 0, 100000.0))
-			generateTerrain();
+			; // Do nothing here, as we'll generate terrain only when the button is pressed
 
 		ImGui::Text("Octaves:");
 		if (ImGui::SliderInt("##Octaves", &octaves, 0, 8))
-			generateTerrain();
+			; // Do nothing here, as we'll generate terrain only when the button is pressed
 
 		ImGui::Text("Gain:");
 		if (ImGui::SliderFloat("##Gain", &gain, 0.0, 2.0))
-			generateTerrain();
+			; // Do nothing here, as we'll generate terrain only when the button is pressed
 
 		ImGui::Text("Lacunarity:");
 		if (ImGui::SliderFloat("##Lacunarity", &lacunarity, 0.0, 10.0))
-			generateTerrain();
+			; // Do nothing here, as we'll generate terrain only when the button is pressed
 
 		ImGui::Text("Sample Scale:");
 		if (ImGui::SliderFloat("##SampleScale", &sampleScale, 0.0, 10))
-			generateTerrain();
+			; // Do nothing here, as we'll generate terrain only when the button is pressed
 
 		ImGui::Text("Height Scale:");
 		if (ImGui::SliderInt("##Height Scale", &maxHeight, 0, 256))
-			generateTerrain();
-
+			; // Do nothing here, as we'll generate terrain only when the button is pressed
 
 		ImGui::Text("Wrap:");
 		if (ImGui::SliderInt("##Wrap", &wrap, 0, 256))
-			generateTerrain();
+			; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+		if (ImGui::Button("Generate Terrain")) {
+			generateTerrain(); // Call generateTerrain function only when this button is pressed
+		}
 
 		if (ImGui::Button("Save Settings")) {
 			saveSettings();
