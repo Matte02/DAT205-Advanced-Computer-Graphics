@@ -10,7 +10,7 @@ add_library(scene
     geomip_grid.cpp
     lod_manager.cpp
     lod_manager.h
-)
+    camera.h)
 
 # Include the necessary directories for this library.
 target_include_directories(scene PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

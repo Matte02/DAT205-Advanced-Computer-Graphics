@@ -8,7 +8,9 @@ add_subdirectory(scene)
 # Build and link executable.
 add_executable ( ${PROJECT_NAME}
     main.cpp
-)
+    procedural_world.h
+    procedural_world.cpp
+    GUI.cpp)
 
 # Link the executable with the scene library
 target_link_libraries(${PROJECT_NAME} scene)
