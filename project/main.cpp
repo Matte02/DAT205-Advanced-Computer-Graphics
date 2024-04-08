@@ -21,7 +21,7 @@ using namespace glm;
 #include <Model.h>
 #include "hdr.h"
 #include "fbo.h"
-#include "perline_noise_terrain.h"
+#include "scene/perline_noise_terrain.h"
 
 #include <fstream> // For file handling
 #include <iostream>
