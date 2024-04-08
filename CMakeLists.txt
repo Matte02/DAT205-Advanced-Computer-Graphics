@@ -44,4 +44,5 @@ if( NOT CMAKE_BUILD_TYPE )
 endif()
 
 add_subdirectory ( labhelper )
+add_subdirectory ( shaders )
 add_subdirectory ( project )

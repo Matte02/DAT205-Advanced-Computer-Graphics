@@ -113,30 +113,30 @@ void generateTerrain() {
 
 void loadShaders(bool is_reload)
 {
-	GLuint shader = labhelper::loadShaderProgram("../project/simple.vert", "../project/simple.frag", is_reload);
+	GLuint shader = labhelper::loadShaderProgram("../shaders/simple.vert", "../shaders/simple.frag", is_reload);
 	if(shader != 0)
 	{
 		simpleShaderProgram = shader;
 	}
 
-	shader = labhelper::loadShaderProgram("../project/background.vert", "../project/background.frag", is_reload);
+	shader = labhelper::loadShaderProgram("../shaders/background.vert", "../shaders/background.frag", is_reload);
 	if(shader != 0)
 	{
 		backgroundProgram = shader;
 	}
 
-	shader = labhelper::loadShaderProgram("../project/shading.vert", "../project/shading.frag", is_reload);
+	shader = labhelper::loadShaderProgram("../shaders/shading.vert", "../shaders/shading.frag", is_reload);
 	if(shader != 0)
 	{
 		shaderProgram = shader;
 	}
 
-	shader = labhelper::loadShaderProgram("../project/single_tex.vert", "../project/single_tex.frag", is_reload);
+	shader = labhelper::loadShaderProgram("../shaders/single_tex.vert", "../shaders/single_tex.frag", is_reload);
 	if (shader != 0)
 	{
 		singleTexProgram = shader;
 	}
-	shader = labhelper::loadShaderProgram("../project/single_tex.vert", "../project/simple_with_norm.frag", is_reload);
+	shader = labhelper::loadShaderProgram("../shaders/single_tex.vert", "../shaders/simple_with_norm.frag", is_reload);
 	if (shader != 0)
 	{
 		normalTexShader = shader;
