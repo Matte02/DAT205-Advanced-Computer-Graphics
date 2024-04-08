@@ -33,6 +33,8 @@ ProceduralWorld::ProceduralWorld() {
 	camera.direction = normalize(vec3(0.0f) - camera.position);
 	camera.speed = 50;
 
+	
+
 	GenerateTerrain();
 
 	ENSURE_INITIALIZE_ONLY_ONCE();
@@ -102,7 +104,7 @@ void ProceduralWorld::Render()
 		labhelper::perf::Scope s("Background");
 		RenderBackground(projMatrix);
 	}
-	auto currentShaderProgram = TerrainShaders.at(1);
+	auto currentShaderProgram = TerrainShaders.at(terrrainShaderProgramIndex);
 	glUseProgram(currentShaderProgram);
 	// TODO: EXTRACT INTO UPDATE WORLD FUNCTION
 	lightPosition = vec3(rotate(currentTime, camera.worldUp) * lightStartPosition);
@@ -154,30 +156,28 @@ void ProceduralWorld::UpdateWindowDimensions()
 // TODO: FIX TERRAIN GENERATION
 void ProceduralWorld::GenerateTerrain()
 {
-	// YUCK FIX
-	std::vector<std::string> textFilenames = {};
-	textFilenames.push_back("desert_sand_d.jpg");
-	textFilenames.push_back("grass_green_d.jpg");
-	textFilenames.push_back("mntn_dark_d.jpg");
-	textFilenames.push_back("snow1_d.jpg");
-	textFilenames.push_back("mntn_brown_d.jpg");
-	textFilenames.push_back("snow_mntn2_d.jpg");
-	textFilenames.push_back("desert_sand_n.jpg");
-	textFilenames.push_back("grass_green_n.jpg");
-	textFilenames.push_back("mntn_dark_n.jpg");
-	textFilenames.push_back("snow1_n.jpg");
-	textFilenames.push_back("mntn_brown_n.jpg");
-	textFilenames.push_back("snow_mntn2_n.jpg");
-
+	m_terrain.Destroy();
 	// TODO: LOOK OVER SLOPE IN SHADERS
-	m_terrain.setSlope(35.0f, 12.5f);
+	m_terrain.setSlope(slopeSettings.slope, slopeSettings.slopeRange);
 
 	// FIX AS WELL
-	m_terrain.InitTerrain(1, 1024, 0.07, 5, textFilenames);
+	m_terrain.InitTerrain(worldSettings.worldScale,
+		worldSettings.worldSize,
+		worldSettings.textureScale,
+		worldSettings.patchSize,
+		textFilenames);
 
 	// TODO: PROBABLY EXTRACT INTO STRUCT
-	m_terrain.GenerateHeightMap(2, 0.5, 6, 1, 0.2 / 100, 100, 0);
+	m_terrain.GenerateHeightMap(terrainNoiseSettings.lacunarity,
+		terrainNoiseSettings.gain,
+		terrainNoiseSettings.octaves,
+		terrainNoiseSettings.offset,
+		terrainNoiseSettings.sampleScale,
+		terrainNoiseSettings.maxHeight,
+		0);
 }
+
+
 
 void ProceduralWorld::CreateShaderPrograms()
 {

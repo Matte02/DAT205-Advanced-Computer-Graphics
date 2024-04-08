@@ -71,8 +71,8 @@ bool ProceduralWorld::HandleEvents(void) {
                 int delta_y = event.motion.y - g_prevMouseCoords.y;
                 float rotationSpeed = 0.1f;
 
-                float yaw = rotationSpeed * deltaTime * (float)-delta_x;
-                float pitch = rotationSpeed * deltaTime * (float)-delta_y;
+                float yaw = rotationSpeed * deltaTime * (float) - delta_x;
+                float pitch = rotationSpeed * deltaTime * (float) - delta_y;
                 camera.rotate(yaw, pitch);
 
                 g_prevMouseCoords.x = event.motion.x;
@@ -116,6 +116,121 @@ void ProceduralWorld::HandleCameraMovement() {
     }
 }
 
+void ProceduralWorld::GuiTexture()
+{
+    if (ImGui::CollapsingHeader("Texture")) {
+        ImGui::Indent();
+        // World Scale
+        /*ImGui::Text("Move sun:");
+        if (ImGui::Checkbox("##Move Sun", &moveSun))
+        */
+            ImGui::Text("Shader Program:");
+        if (ImGui::SliderInt("##Shader Program", &terrrainShaderProgramIndex, 0, (int)TerrainShaders.size()-1))
+
+            ImGui::Text("Texture Scale:");
+        if (ImGui::SliderFloat("##Texture Scale", &worldSettings.textureScale, 0.0f, 0.1f))
+            GenerateTerrain();
+        /*if (ImGui::CollapsingHeader("Height Thresholds")) {
+            ImGui::Indent();
+            ImGui::Text("Keep the height values in order. I.e 1 should be lower than 2.");
+            ImGui::Text("Height 1:");
+            if (ImGui::SliderFloat("##Height 1", &heightThresholds[0], 0.0, 1)) {
+                m_terrain.setTerrainHeights(heightThresholds);
+                GenerateTerrain();
+            }
+            ImGui::Text("Height 2:");
+            if (ImGui::SliderFloat("##Height 2", &heightThresholds[1], 0.0, 1)) {
+                m_terrain.setTerrainHeights(heightThresholds);
+                generateTerrain();
+            }
+            ImGui::Text("Height 3:");
+            if (ImGui::SliderFloat("##Height 3", &heightThresholds[2], 0.0, 1)) {
+                m_terrain.setTerrainHeights(heightThresholds);
+                generateTerrain();
+            }
+            ImGui::Text("Height 4:");
+            if (ImGui::SliderFloat("##Height 4", &heightThresholds[3], 0.0, 1)) {
+                m_terrain.setTerrainHeights(heightThresholds);
+                generateTerrain();
+            }
+            ImGui::Unindent();
+        }*/
+        ImGui::Text("Slope");
+        if (ImGui::SliderFloat("##Slope", &slopeSettings.slope, 0.0f, 90.0f)) {
+            GenerateTerrain();
+        }
+        ImGui::Text("Slope Range");
+        if (ImGui::SliderFloat("##Slope Range", &slopeSettings.slopeRange, 0.0f, 90.0f)) {
+            GenerateTerrain();
+        }
+        ImGui::Unindent();
+    }
+}
+
+void ProceduralWorld::GuiTerrain()
+{
+    if (ImGui::CollapsingHeader("Terrain Generation")) {
+        ImGui::Indent();
+
+        // World Scale
+        ImGui::Text("World Scale:");
+        if (ImGui::SliderFloat("##World Scale", &worldSettings.worldScale, 0.0, 20.0))
+            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+        // World Size
+        ImGui::Text("World Size:");
+        if (ImGui::SliderInt("##World Size", &worldSettings.worldSize, 1, 2048))
+            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+        // World Size
+        ImGui::Text("Patch Size:");
+        if (ImGui::SliderInt("##Patch Size", &worldSettings.patchSize, 2, 7))
+            ;
+
+        // Perlin Noise Parameters
+        ImGui::Text("Offset:");
+        if (ImGui::SliderFloat("##Offset", &terrainNoiseSettings.offset, 0, 100000.0))
+            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+        ImGui::Text("Octaves:");
+        if (ImGui::SliderInt("##Octaves", &terrainNoiseSettings.octaves, 0, 8))
+            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+        ImGui::Text("Gain:");
+        if (ImGui::SliderFloat("##Gain", &terrainNoiseSettings.gain, 0.0, 2.0))
+            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+        ImGui::Text("Lacunarity:");
+        if (ImGui::SliderFloat("##Lacunarity", &terrainNoiseSettings.lacunarity, 0.0, 10.0))
+            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+        ImGui::Text("Sample Scale:");
+        if (ImGui::SliderFloat("##SampleScale", &terrainNoiseSettings.sampleScale, 0.0, 0.01))
+            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+        ImGui::Text("Height Scale:");
+        if (ImGui::SliderInt("##Height Scale", &terrainNoiseSettings.maxHeight, 0, 256))
+            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+
+
+        if (ImGui::Button("Generate Terrain")) {
+            GenerateTerrain(); // Call generateTerrain function only when this button is pressed
+        }
+
+        /*if (ImGui::Button("Save Settings")) {
+            saveSettings();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Load Settings")) {
+            loadSettings();
+            generateTerrain(); // Regenerate terrain after loading settings
+        }*/
+
+        ImGui::Unindent();
+    }
+}
+
 void ProceduralWorld::RenderGuiOverlay()
 {
     // ----------------- Set variables --------------------------
@@ -123,7 +238,9 @@ void ProceduralWorld::RenderGuiOverlay()
         ImGui::GetIO().Framerate);
     // ----------------------------------------------------------
 
+    GuiTexture();
 
+    GuiTerrain();
 
     ////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////

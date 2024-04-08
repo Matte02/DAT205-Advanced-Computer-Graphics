@@ -7,7 +7,7 @@ struct Camera {
     vec3 position;
     vec3 direction;
     float speed;
-    vec3 worldUp = vec3(0.0f, 0.1f, 0.0f);
+    const vec3 worldUp = normalize(vec3(0.0f, 0.1f, 0.0f));
 
     Camera() : position(vec3(0.0f)), direction(vec3(0.0f, 0.0f, -1.0f)), speed(1.0f) {}
 
@@ -48,7 +48,6 @@ struct Camera {
         mat4 yawMat = glm::rotate(yaw, worldUp);
         mat4 pitchMat = glm::rotate(pitch, normalize(cross(direction, worldUp)));
 
-        direction = vec3(normalize(pitchMat * yawMat * vec4(direction, 0.0)));
-        worldUp = vec3(normalize(pitchMat * vec4(worldUp, 0.0)));
+        direction = vec3(pitchMat * yawMat * vec4(direction, 0.0));
     }
 };
