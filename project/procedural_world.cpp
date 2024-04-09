@@ -23,19 +23,12 @@
 using namespace glm;
 
 constexpr auto SHADER_DIR = "../shaders/";
-const std::string envmap_base_name = "001";
 ProceduralWorld::ProceduralWorld() {
 
 	g_window = labhelper::init_window_SDL("Procedural World");
 
-	// Init Camera
-	camera.position = vec3(140.0f, 50.0f, 140.0f);
-	camera.direction = normalize(vec3(0.0f) - camera.position);
-	camera.speed = 50;
+	InitializeWorld();
 
-	
-
-	GenerateTerrain();
 
 	ENSURE_INITIALIZE_ONLY_ONCE();
 	CreateShaderPrograms();
@@ -60,6 +53,8 @@ void ProceduralWorld::Run() {
 		labhelper::newFrame(g_window);
 
 		UpdateWindowDimensions();
+		
+		UpdateWorld();
 		// Render Scene
 		Render();
 		// Render GUI Overlay
@@ -80,13 +75,17 @@ void ProceduralWorld::InitTextures()
 	environmentMap = labhelper::loadHdrTexture("../scenes/envmaps/001.hdr");
 }
 
+void ProceduralWorld::UpdateWorld()
+{
+	lightPosition = vec3(rotate(currentTime, camera.worldUp) * lightStartPosition);
+}
+
 void ProceduralWorld::Render()
 {
 
 	labhelper::perf::Scope s("Render");
 
-	// Calculate Projection Matrix. TODO EXTRACT MAGIC NUMBERS AS VARIABLES
-	mat4 projMatrix = perspective(radians(45.0f), float(windowWidth) / float(windowHeight), 5.0f, 2000.0f);
+	mat4 projMatrix = perspective(radians(viewAngleR), float(windowWidth) / float(windowHeight), nearPlaneZ, farPlaneZ);
 
 	if (isWireframe) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -105,9 +104,9 @@ void ProceduralWorld::Render()
 		RenderBackground(projMatrix);
 	}
 	auto currentShaderProgram = TerrainShaders.at(terrrainShaderProgramIndex);
+
 	glUseProgram(currentShaderProgram);
-	// TODO: EXTRACT INTO UPDATE WORLD FUNCTION
-	lightPosition = vec3(rotate(currentTime, camera.worldUp) * lightStartPosition);
+
 	labhelper::setUniformSlow(currentShaderProgram, "reversedLightDir", normalize(vec3(-lightPosition)));
 
 	m_terrain.Render(camera.getViewMatrix(), projMatrix, currentShaderProgram, camera.position);
@@ -137,9 +136,9 @@ void ProceduralWorld::UpdateTimers()
 
 void ProceduralWorld::UpdateWindowDimensions()
 {
-///////////////////////////////////////////////////////////////////////////
-// Check if window size has changed and resize buffers as needed
-///////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
+	// Check if window size has changed and resize buffers as needed
+	///////////////////////////////////////////////////////////////////////////
 	{
 		int w;
 		int h;
@@ -150,6 +149,17 @@ void ProceduralWorld::UpdateWindowDimensions()
 			windowHeight = h;
 		}
 	}
+
+}
+
+void ProceduralWorld::InitializeWorld()
+{
+	GenerateTerrain();
+
+	// Init Camera
+	camera.position = vec3(140.0f, 50.0f, 140.0f);
+	camera.direction = normalize(vec3(0.0f) - camera.position);
+	camera.speed = 50;
 
 }
 

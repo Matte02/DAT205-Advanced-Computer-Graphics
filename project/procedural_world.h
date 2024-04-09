@@ -26,6 +26,8 @@ private:
 	// Textures
 	void InitTextures();
 
+	void UpdateWorld();
+
 	// Render
 	void Render();
 	void RenderBackground(const mat4& projectionMatrix);
@@ -42,6 +44,8 @@ private:
 
 
 	// Generate Terrain
+
+	void InitializeWorld();
 	void GenerateTerrain();
 
 
@@ -87,7 +91,13 @@ private:
 	float deltaTime = 0.0f;
 	std::chrono::time_point<std::chrono::system_clock> startTime;
 
+
+	// Camera and View
 	Camera camera;
+	float nearPlaneZ = 5.0f;
+	float farPlaneZ = 2000.0f;
+	float viewAngleR = 45.0f;
+
 	vec3 lightPosition = vec3(-400.0f, 400.0f, 0.0f);
 	vec4 lightStartPosition = vec4(lightPosition, 1.0f);
 
