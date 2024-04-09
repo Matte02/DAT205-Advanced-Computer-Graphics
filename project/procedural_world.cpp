@@ -170,21 +170,15 @@ void ProceduralWorld::GenerateTerrain()
 	// TODO: LOOK OVER SLOPE IN SHADERS
 	m_terrain.setSlope(slopeSettings.slope, slopeSettings.slopeRange);
 
+
+	Array2D<float> heightMap = heightMapGenerator.GenerateHeightMap(worldSettings.worldSize, Noise::FBM, true);
 	// FIX AS WELL
 	m_terrain.InitTerrain(worldSettings.worldScale,
 		worldSettings.worldSize,
 		worldSettings.textureScale,
 		worldSettings.patchSize,
-		textFilenames);
-
-	// TODO: PROBABLY EXTRACT INTO STRUCT
-	m_terrain.GenerateHeightMap(terrainNoiseSettings.lacunarity,
-		terrainNoiseSettings.gain,
-		terrainNoiseSettings.octaves,
-		terrainNoiseSettings.offset,
-		terrainNoiseSettings.sampleScale,
-		terrainNoiseSettings.maxHeight,
-		0);
+		textFilenames,
+		heightMap);
 }
 
 

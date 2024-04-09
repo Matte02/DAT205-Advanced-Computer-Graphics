@@ -1,5 +1,6 @@
 #pragma once
-#include "scene/perline_noise_terrain.h"
+#include "scene/height_map_generator.h"
+#include "scene/terrain.h"
 #include <chrono>
 #include <labhelper.h>
 #include "scene/camera.h"
@@ -103,18 +104,9 @@ private:
 
 
 	// TODO: LOOK OVER
-	struct NoiseSettings {
-		float lacunarity = 2.0f;
-		float gain = 0.5f;
-		int octaves = 6;
-		float offset = 0;
-		float sampleScale = 0.005;
-		int maxHeight = 100;
-	};
-	// TODO: LOOK OVER
 	struct WorldSettings {
 		float worldScale = 1.0f;
-		int worldSize = 1024;
+		int worldSize = 993;
 		float textureScale = 0.070;
 		int patchSize = 5;
 	};
@@ -140,10 +132,10 @@ private:
 
 	// TODO: LOOK OVER
 	SlopeSettings slopeSettings;
-	NoiseSettings terrainNoiseSettings;
 	WorldSettings worldSettings;
 
 
 	// TODO: REFACTOR m_terrain
-	PerlinNoiseTerrain m_terrain;
+	BaseTerrain m_terrain;
+	HeightMapGenerator heightMapGenerator;
 };

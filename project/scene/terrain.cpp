@@ -10,7 +10,7 @@
 #include "labhelper.h"
 #include <Model.h>
 
-void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int PatchSizePower, const std::vector<std::string>& TextureFilenames)
+void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int PatchSizePower, const std::vector<std::string>& TextureFilenames, Array2D<float>& heightMap)
 {
 
 
@@ -30,12 +30,13 @@ void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScal
     m_worldScale = WorldScale;
     m_textureScale = TextureScale;
     
-    m_heightMap.InitArray2D(m_terrainSize, m_terrainSize, 0.0f);
+    m_heightMap = heightMap;
 
     std::vector<std::string> textureNames(TextureFilenames.begin(), TextureFilenames.begin() + TextureFilenames.size() / 2);
     std::vector<std::string> TextureNormalNames(TextureFilenames.begin() + TextureFilenames.size() / 2, TextureFilenames.end());
     InitTextures(textureNames, m_pTextures);
     InitTextures(textureNames, m_pTextureNormals);
+    m_geomipGrid.CreateGeomipGrid(m_terrainSize, m_terrainSize, m_patchSize, this);
 }
 
 
@@ -88,11 +89,6 @@ void BaseTerrain::Destroy()
     }
 
 }
-
-void BaseTerrain::GenerateHeightMap() {
-    m_geomipGrid.CreateGeomipGrid(m_terrainSize, m_terrainSize, m_patchSize, this);
-}
-
 
 void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projMatrix, GLuint currentShaderProgram, const vec3& CameraPos)
 {

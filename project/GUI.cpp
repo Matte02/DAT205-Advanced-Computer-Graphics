@@ -187,11 +187,11 @@ void ProceduralWorld::GuiTerrain()
         if (ImGui::SliderInt("##Patch Size", &worldSettings.patchSize, 2, 7))
             ;
 
-        // Perlin Noise Parameters
+       /* // Perlin Noise Parameters
         ImGui::Text("Offset:");
         if (ImGui::SliderFloat("##Offset", &terrainNoiseSettings.offset, 0, 100000.0))
             ; // Do nothing here, as we'll generate terrain only when the button is pressed
-
+            
         ImGui::Text("Octaves:");
         if (ImGui::SliderInt("##Octaves", &terrainNoiseSettings.octaves, 0, 8))
             ; // Do nothing here, as we'll generate terrain only when the button is pressed
@@ -212,7 +212,7 @@ void ProceduralWorld::GuiTerrain()
         if (ImGui::SliderInt("##Height Scale", &terrainNoiseSettings.maxHeight, 0, 256))
             ; // Do nothing here, as we'll generate terrain only when the button is pressed
 
-
+        */
         if (ImGui::Button("Generate Terrain")) {
             GenerateTerrain(); // Call generateTerrain function only when this button is pressed
         }
