@@ -4,8 +4,8 @@ add_library(scene
     terrain.h
     triangle_list.cpp
     triangle_list.h
-    perline_noise_terrain.h
-    perline_noise_terrain.cpp
+    height_map_generator.h
+    height_map_generator.cpp
     geomip_grid.h
     geomip_grid.cpp
     lod_manager.cpp

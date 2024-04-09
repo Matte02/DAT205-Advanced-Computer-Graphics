@@ -39,6 +39,7 @@ ProceduralWorld::ProceduralWorld() {
 }
 
 ProceduralWorld::~ProceduralWorld() {
+	heightMap.Destroy();
 }
 
 void ProceduralWorld::Run() {
@@ -162,29 +163,26 @@ void ProceduralWorld::InitializeWorld()
 	camera.speed = 50;
 
 }
+void ProceduralWorld::RegenerateTerrain() {
+	m_terrain.Destroy();
+	GenerateTerrain();
+}
 
 // TODO: FIX TERRAIN GENERATION
 void ProceduralWorld::GenerateTerrain()
 {
-	m_terrain.Destroy();
 	// TODO: LOOK OVER SLOPE IN SHADERS
 	m_terrain.setSlope(slopeSettings.slope, slopeSettings.slopeRange);
 
+
+	heightMapGenerator.GenerateHeightMap(&heightMap, worldSettings.worldSize, true);
 	// FIX AS WELL
 	m_terrain.InitTerrain(worldSettings.worldScale,
 		worldSettings.worldSize,
 		worldSettings.textureScale,
 		worldSettings.patchSize,
-		textFilenames);
-
-	// TODO: PROBABLY EXTRACT INTO STRUCT
-	m_terrain.GenerateHeightMap(terrainNoiseSettings.lacunarity,
-		terrainNoiseSettings.gain,
-		terrainNoiseSettings.octaves,
-		terrainNoiseSettings.offset,
-		terrainNoiseSettings.sampleScale,
-		terrainNoiseSettings.maxHeight,
-		0);
+		textFilenames,
+		&heightMap);
 }
 
 

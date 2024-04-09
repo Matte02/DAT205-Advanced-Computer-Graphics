@@ -120,10 +120,7 @@ void ProceduralWorld::GuiTexture()
 {
     if (ImGui::CollapsingHeader("Texture")) {
         ImGui::Indent();
-        // World Scale
-        /*ImGui::Text("Move sun:");
-        if (ImGui::Checkbox("##Move Sun", &moveSun))
-        */
+
             ImGui::Text("Shader Program:");
         if (ImGui::SliderInt("##Shader Program", &terrrainShaderProgramIndex, 0, (int)TerrainShaders.size()-1))
 
@@ -174,58 +171,73 @@ void ProceduralWorld::GuiTerrain()
 
         // World Scale
         ImGui::Text("World Scale:");
-        if (ImGui::SliderFloat("##World Scale", &worldSettings.worldScale, 0.0, 20.0))
-            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+        if (ImGui::SliderFloat("##World Scale", &worldSettings.worldScale, 0.0, 20.0));
 
         // World Size
         ImGui::Text("World Size:");
-        if (ImGui::SliderInt("##World Size", &worldSettings.worldSize, 1, 2048))
-            ; // Do nothing here, as we'll generate terrain only when the button is pressed
+        if (ImGui::SliderInt("##World Size", &worldSettings.worldSize, 1, 2048));
 
         // World Size
         ImGui::Text("Patch Size:");
-        if (ImGui::SliderInt("##Patch Size", &worldSettings.patchSize, 2, 7))
-            ;
-
-        // Perlin Noise Parameters
-        ImGui::Text("Offset:");
-        if (ImGui::SliderFloat("##Offset", &terrainNoiseSettings.offset, 0, 100000.0))
-            ; // Do nothing here, as we'll generate terrain only when the button is pressed
-
-        ImGui::Text("Octaves:");
-        if (ImGui::SliderInt("##Octaves", &terrainNoiseSettings.octaves, 0, 8))
-            ; // Do nothing here, as we'll generate terrain only when the button is pressed
-
-        ImGui::Text("Gain:");
-        if (ImGui::SliderFloat("##Gain", &terrainNoiseSettings.gain, 0.0, 2.0))
-            ; // Do nothing here, as we'll generate terrain only when the button is pressed
-
-        ImGui::Text("Lacunarity:");
-        if (ImGui::SliderFloat("##Lacunarity", &terrainNoiseSettings.lacunarity, 0.0, 10.0))
-            ; // Do nothing here, as we'll generate terrain only when the button is pressed
-
-        ImGui::Text("Sample Scale:");
-        if (ImGui::SliderFloat("##SampleScale", &terrainNoiseSettings.sampleScale, 0.0, 0.01))
-            ; // Do nothing here, as we'll generate terrain only when the button is pressed
-
-        ImGui::Text("Height Scale:");
-        if (ImGui::SliderInt("##Height Scale", &terrainNoiseSettings.maxHeight, 0, 256))
-            ; // Do nothing here, as we'll generate terrain only when the button is pressed
-
+        if (ImGui::SliderInt("##Patch Size", &worldSettings.patchSize, 2, 7));
+        
+        GuiNoiseSettings();
 
         if (ImGui::Button("Generate Terrain")) {
-            GenerateTerrain(); // Call generateTerrain function only when this button is pressed
+            RegenerateTerrain();
         }
 
-        /*if (ImGui::Button("Save Settings")) {
-            saveSettings();
+        ImGui::Unindent();
+    }
+}
+
+void ProceduralWorld::GuiNoiseSettings()
+{
+    if (ImGui::CollapsingHeader("Noise Settings")) {
+        ImGui::Indent();
+
+        NoiseSettings& noiseSettings = heightMapGenerator.getNoiseSettings();
+        ImGui::Text("Noise Type:");
+        const char* items[] = { "DEFAULT", "FBM", "TURBULENCE", "RIDGE" };
+        int currentItem = noiseSettings.noiseType;
+        if (ImGui::Combo("##NoiseType", &currentItem, items, IM_ARRAYSIZE(items))) {
+            noiseSettings.noiseType = static_cast<Noise>(currentItem);
         }
 
-        ImGui::SameLine();
-        if (ImGui::Button("Load Settings")) {
-            loadSettings();
-            generateTerrain(); // Regenerate terrain after loading settings
-        }*/
+        ImGui::Text("Lacunarity:");
+        ImGui::SliderFloat("##Lacunarity", &noiseSettings.lacunarity, 0.0f, 10.0f);
+
+        ImGui::Text("Gain:");
+        ImGui::SliderFloat("##Gain", &noiseSettings.gain, 0.0f, 2.0f);
+
+        ImGui::Text("Octaves:");
+        ImGui::SliderInt("##Octaves", &noiseSettings.octaves, 0, 8);
+
+        ImGui::Text("Sample Scale:");
+        ImGui::SliderFloat("##SampleScale", &noiseSettings.sampleScale, 0.0f, 0.01f);
+
+        ImGui::Text("Min Height:");
+        ImGui::SliderFloat("##MinHeight", &noiseSettings.minHeight, 0.0f, 1000.0f);
+
+        ImGui::Text("Max Height:");
+        ImGui::SliderFloat("##MaxHeight", &noiseSettings.maxHeight, 0.0f, 1000.0f);
+
+        ImGui::Text("Ridge Offset:");
+        ImGui::SliderFloat("##RidgeOffset", &noiseSettings.ridgeOffset, 0.0f, 10.0f);
+
+        ImGui::Text("Sample Offset:");
+        // Adjusting the layout for X, Y, Z components of sampleOffset vector
+        ImGui::Text("X:"); ImGui::SameLine();
+        ImGui::SetNextItemWidth(50); // Set the width of the input box
+        ImGui::InputFloat("##SampleOffsetX", &noiseSettings.sampleOffset.x);
+        ImGui::SameLine(); // Adjust this value to your preference
+        ImGui::Text("Y:"); ImGui::SameLine();
+        ImGui::SetNextItemWidth(50); // Set the width of the input box
+        ImGui::InputFloat("##SampleOffsetY", &noiseSettings.sampleOffset.y);
+        ImGui::SameLine(); // Adjust this value to your preference
+        ImGui::Text("Z:"); ImGui::SameLine();
+        ImGui::SetNextItemWidth(50); // Set the width of the input box
+        ImGui::InputFloat("##SampleOffsetZ", &noiseSettings.sampleOffset.z);
 
         ImGui::Unindent();
     }
