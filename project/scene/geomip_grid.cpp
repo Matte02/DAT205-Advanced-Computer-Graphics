@@ -9,6 +9,8 @@ using namespace glm;
 #include "geomip_grid.h"
 #include "terrain.h"
 #include "perf.h"
+#include <iostream>
+#include <omp.h>
 /***
 *** Based on the Triangle List Class
 ***/
@@ -61,6 +63,20 @@ void GeomipGrid::CreateGeomipGrid(int Width, int Depth, int PatchSize, const Bas
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void GeomipGrid::UpdateVertices(const BaseTerrain* pTerrain) {
+	// Vertices
+	std::vector<Vertex> Vertices;
+	Vertices.resize(m_width * m_depth);
+	InitVertices(pTerrain, Vertices);
+
+	CalcNormals(Vertices, Indices);
+
+	// Bind the vertex buffer and update the data
+	glBindBuffer(GL_ARRAY_BUFFER, m_vb);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * Vertices.size(), &Vertices[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void GeomipGrid::CreateGLState()
 {
 	glGenVertexArrays(1, &m_vao);
@@ -93,49 +109,15 @@ void GeomipGrid::CreateGLState()
 	NumFloats += 3;
 }
 
-
-void GeomipGrid::CalcNormals(std::vector<Vertex>& Vertices, std::vector<uint>& Indices)
-{
-	unsigned int Index = 0;
-
-	// Accumulate each triangle normal into each of the triangle vertices
-	for (int z = 0; z < m_depth - 1; z += (m_patchSize - 1)) {
-		for (int x = 0; x < m_width - 1; x += (m_patchSize - 1)) {
-			int BaseVertex = z * m_width + x;
-			//printf("Base index %d\n", BaseVertex);
-			int NumIndices = m_lodInfo[0].info[0][0][0][0].Count;
-			for (int i = 0; i < NumIndices; i += 3) {
-				unsigned int Index0 = BaseVertex + Indices[i];
-				unsigned int Index1 = BaseVertex + Indices[i + 1];
-				unsigned int Index2 = BaseVertex + Indices[i + 2];
-				vec3 v1 = Vertices[Index1].Pos - Vertices[Index0].Pos;
-				vec3 v2 = Vertices[Index2].Pos - Vertices[Index0].Pos;
-				vec3 Normal = cross(v1, v2);
-				Normal = normalize(Normal);
-
-				Vertices[Index0].Normal += Normal;
-				Vertices[Index1].Normal += Normal;
-				Vertices[Index2].Normal += Normal;
-			}
-		}
-	}
-
-	// Normalize all the vertex normals
-	for (unsigned int i = 0; i < Vertices.size(); i++) {
-		Vertices[i].Normal = normalize(Vertices[i].Normal);
-	}
-}
-
 void GeomipGrid::PopulateBuffers(const BaseTerrain* pTerrain)
 {
-	// Vertecies
+	// Vertices
 	std::vector<Vertex> Vertices;
 	Vertices.resize(m_width * m_depth);
 	InitVertices(pTerrain, Vertices);
 
 	// Indices
 	int NumIndices = CalcNumIndices(); // Will be slightly larger than what the actual size will be. Only used for the vector size.
-	std::vector<uint> Indices;
 	Indices.resize(NumIndices);
 	NumIndices = InitIndices(Indices); // The actual size calculated dynamically.
 	printf("Final number of indices: %d\n", NumIndices);
@@ -163,17 +145,24 @@ int GeomipGrid::CalcNumIndices() {
 
 void GeomipGrid::InitVertices(const BaseTerrain* pTerrain, std::vector<Vertex>& Vertices)
 {
-	int Index = 0;
-
+	// Start timing
+#if TIMING_ENABLED
+	auto start = std::chrono::high_resolution_clock::now();
+#endif
+#pragma omp parallel for default(none) shared(pTerrain, Vertices)
 	for (int z = 0; z < m_depth; z++) {
 		for (int x = 0; x < m_width; x++) {
+			int Index = z * m_width + x;
 			assert(Index < Vertices.size());
 			Vertices[Index].InitVertex(pTerrain, x, z);
-			Index++;
 		}
 	}
-
-	assert(Index == Vertices.size());
+	// End timing and output
+#if TIMING_ENABLED
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> duration = end - start;
+	std::cout << "Time taken for initializing vertices in Geomip Grid: " << duration.count() << " seconds" << std::endl;
+#endif
 }
 
 void GeomipGrid::Vertex::InitVertex(const BaseTerrain* pTerrain, int x, int z)
@@ -326,13 +315,70 @@ uint GeomipGrid::AddTriangle(uint Index, std::vector<uint>& Indices, uint v1, ui
 	return Index;
 }
 
+
+
+void GeomipGrid::CalcNormals(std::vector<Vertex>& Vertices, const std::vector<uint>& Indices)
+{
+	// Timing variables
+#if TIMING_ENABLED
+	auto start = std::chrono::high_resolution_clock::now(); // Start timing
+#endif
+
+	int NumIndices = m_lodInfo[0].info[0][0][0][0].Count;
+#pragma omp parallel for default(none) shared(Vertices, Indices, NumIndices)
+	for (int z = 0; z < m_depth - 1; z += (m_patchSize - 1)) {
+		for (int x = 0; x < m_width - 1; x += (m_patchSize - 1)) {
+			int BaseVertex = z * m_width + x;
+			for (int i = 0; i < NumIndices; i += 3) {
+				unsigned int Index0 = BaseVertex + Indices[i];
+				unsigned int Index1 = BaseVertex + Indices[i + 1];
+				unsigned int Index2 = BaseVertex + Indices[i + 2];
+				vec3 v1 = Vertices[Index1].Pos - Vertices[Index0].Pos;
+				vec3 v2 = Vertices[Index2].Pos - Vertices[Index0].Pos;
+				vec3 Normal = normalize(cross(v1, v2));
+				// NOT VERY CLEAN, but like 3x faster (with 12 threads)
+#pragma omp atomic
+				Vertices[Index0].Normal.x += Normal.x;
+#pragma omp atomic
+				Vertices[Index0].Normal.y += Normal.y;
+#pragma omp atomic
+				Vertices[Index0].Normal.z += Normal.z;
+#pragma omp atomic
+				Vertices[Index1].Normal.x += Normal.x;
+#pragma omp atomic
+				Vertices[Index1].Normal.y += Normal.y;
+#pragma omp atomic
+				Vertices[Index1].Normal.z += Normal.z;
+#pragma omp atomic
+				Vertices[Index2].Normal.x += Normal.x;
+#pragma omp atomic
+				Vertices[Index2].Normal.y += Normal.y;
+#pragma omp atomic
+				Vertices[Index2].Normal.z += Normal.z;
+			}
+		}
+	}
+
+	// Normalize all the vertex normals
+#pragma omp parallel for default(none) shared(Vertices)
+	for (int i = 0; i < Vertices.size(); i++) {
+		Vertices[i].Normal = normalize(Vertices[i].Normal);
+	}
+	// End timing and output
+#if TIMING_ENABLED
+	auto end = std::chrono::high_resolution_clock::now(); // End timing
+	std::chrono::duration<double> duration = end - start;
+	std::cout << "Time taken for calculating normals for all vertices: " << duration.count() << " seconds" << std::endl;
+#endif
+}
+
 void GeomipGrid::Render(const vec3& CameraPos)
 {
 	m_lodManager.Update(CameraPos);
 
-	glBindVertexArray(m_vao);
 	{
 		labhelper::perf::Scope s("GeomipGrid: Render Patches");
+		glBindVertexArray(m_vao);
 
 		for (int PatchZ = 0; PatchZ < m_numPatchesZ; PatchZ++) {
 			for (int PatchX = 0; PatchX < m_numPatchesX; PatchX++) {

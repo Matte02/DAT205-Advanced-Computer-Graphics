@@ -3,12 +3,18 @@
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb-master/stb_perlin.h"
 #include <stdexcept>
+#include <chrono>
+#include <iostream>
 
 HeightMapGenerator::HeightMapGenerator() = default;
 
 void HeightMapGenerator::GenerateHeightMap(Array2D<float>* heightMap, int worldSize, bool normalizeMap) const
 {
+#if TIMING_ENABLED
+    auto start = std::chrono::high_resolution_clock::now();
+#endif
 	heightMap->InitArray2D(worldSize, worldSize, 0.0f);
+#pragma omp parallel for collapse(2) // Parallelize the nested loops
     for (int z = 0; z < worldSize; z++) {
         for (int x = 0; x < worldSize; x++) {
             float height = 0;
@@ -71,4 +77,9 @@ void HeightMapGenerator::GenerateHeightMap(Array2D<float>* heightMap, int worldS
     if (normalizeMap) {
 		heightMap->Normalize(settings.minHeight, settings.maxHeight);
     }
+#if TIMING_ENABLED
+    auto end = std::chrono::high_resolution_clock::now(); // End timing
+    std::chrono::duration<double> duration = end - start;
+    std::cout << "Time taken for generating height map in Height Map Generator: " << duration.count() << " seconds" << std::endl;
+#endif
 }

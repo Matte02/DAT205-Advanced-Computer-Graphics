@@ -16,6 +16,8 @@ public:
 	void Destroy();
 
 	void InitTerrain(float WorldScale, int WorldSize, float TextureScale, int PatchSize, const std::vector<std::string>& TextureFilenames, Array2D<float>* heightMap);
+	// Should only be used if the heights of the height map has changed, not when changing size or scale.
+	void UpdateHeightMapHeights(Array2D<float>* heightMap);
 
 	void Render(const mat4 viewMatrix, const mat4 projMatrix, GLuint currentShaderProgram, const vec3& CameraPos);
 

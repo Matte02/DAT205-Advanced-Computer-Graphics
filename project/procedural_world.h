@@ -50,6 +50,7 @@ private:
 	void InitializeWorld();
 	void RegenerateTerrain();
 	void GenerateTerrain();
+	void UpdateHeightMap();
 
 
 	bool stopRunning = false;
@@ -136,8 +137,10 @@ private:
 	SlopeSettings slopeSettings;
 	WorldSettings worldSettings;
 
+	bool autoUpdate = false;
+	bool updateHeightMap = false;
+	bool regenerateWorld = false;
 
-	// TODO: REFACTOR m_terrain
 	BaseTerrain m_terrain;
 	HeightMapGenerator heightMapGenerator;
 	Array2D<float> heightMap;

@@ -41,6 +41,19 @@ void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScal
     m_geomipGrid.CreateGeomipGrid(m_terrainSize, m_terrainSize, m_patchSize, this);
 }
 
+void BaseTerrain::UpdateHeightMapHeights(Array2D<float>* heightMap)
+{
+    if (heightMap->GetSize() < m_terrainSize * m_terrainSize) {
+        printf("Height map size is smaller than terrain size. Reinitlize terrain instead of Updating Heights.");
+        exit(1);
+    }
+
+    heightMap->GetMinMax(m_minHeight, m_maxHeight);
+    m_heightMap = heightMap;
+
+    m_geomipGrid.UpdateVertices(this);
+}
+
 
 void BaseTerrain::setTerrainHeights(const std::vector<float> heights)
 {

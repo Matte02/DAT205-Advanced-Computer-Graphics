@@ -21,6 +21,7 @@ public:
 	~GeomipGrid();
 
 	void CreateGeomipGrid(int Width, int Depth, int PatchSize, const BaseTerrain* pTerrain);
+	void UpdateVertices(const BaseTerrain* pTerrain);
 
 	void Destroy();
 
@@ -47,7 +48,7 @@ private:
 	int InitIndicesLODSingle(int Index, std::vector<uint>& Indices, int lodCore, int lodLeft, int lodRight, int lodTop, int lodBottom);
 	int CalcNumIndices();
 
-	void CalcNormals(std::vector<Vertex>& Vertices, std::vector<uint>& Indices);
+	void CalcNormals(std::vector<Vertex>& Vertices, const std::vector<uint>& Indices);
 
 	uint AddTriangle(uint Index, std::vector<uint>& Indices, uint v1, uint v2, uint v3);
 	uint CreateTriangleFan(int Index, std::vector<uint>& Indices, int lodCore, int lodLeft, int lodRight, int lodTop, int lodBottom, int x, int y);
@@ -82,7 +83,7 @@ private:
 	GLuint m_vao = 0;
 	GLuint m_vb = 0;
 	GLuint m_ib = 0;
-
+	std::vector<uint> Indices;
 
 };
 #endif

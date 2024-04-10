@@ -33,10 +33,16 @@ macro(config_build_output)
     endif(MSVC)
 endmacro(config_build_output)
 
+find_package(OpenMP)
 
+# Add compiler flags for OpenMP if found
+if(OpenMP_CXX_FOUND)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 add_definitions(-DGLM_ENABLE_EXPERIMENTAL)
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+add_definitions(-DTIMING_ENABLED=1) # Change to 0 to disable timing
 set ( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 set ( CMAKE_CXX_STANDARD 11 )
 if( NOT CMAKE_BUILD_TYPE )

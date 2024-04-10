@@ -164,8 +164,16 @@ void ProceduralWorld::InitializeWorld()
 
 }
 void ProceduralWorld::RegenerateTerrain() {
+#if TIMING_ENABLED
+	auto start = std::chrono::high_resolution_clock::now();
+#endif
 	m_terrain.Destroy();
 	GenerateTerrain();
+#if TIMING_ENABLED
+	auto end = std::chrono::high_resolution_clock::now(); // End timing
+	std::chrono::duration<double> duration = end - start;
+	std::cout << "Time taken for REGENERATING new world: " << duration.count() << " seconds" << std::endl;
+#endif
 }
 
 // TODO: FIX TERRAIN GENERATION
@@ -183,6 +191,21 @@ void ProceduralWorld::GenerateTerrain()
 		worldSettings.patchSize,
 		textFilenames,
 		&heightMap);
+}
+
+void ProceduralWorld::UpdateHeightMap()
+{	// Start timing
+#if TIMING_ENABLED
+	auto start = std::chrono::high_resolution_clock::now();
+#endif
+	heightMapGenerator.GenerateHeightMap(&heightMap, worldSettings.worldSize, true);
+	m_terrain.UpdateHeightMapHeights(&heightMap);
+
+#if TIMING_ENABLED
+	auto end = std::chrono::high_resolution_clock::now(); // End timing
+	std::chrono::duration<double> duration = end - start;
+	std::cout << "Time taken for generating new heightmap and updating the vertices: " << duration.count() << " seconds" << std::endl;
+#endif
 }
 
 
