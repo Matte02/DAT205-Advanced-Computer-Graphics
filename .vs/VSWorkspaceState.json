@@ -7,9 +7,11 @@
   },
   "ExpandedNodes": [
     "",
-    "\\build",
-    "\\project"
+    "\\labhelper",
+    "\\project",
+    "\\project\\scene",
+    "\\shaders"
   ],
-  "SelectedNode": "\\build\\opengl-base-project.sln",
+  "SelectedNode": "\\shaders\\CMakeLists.txt",
   "PreviewInSolutionExplorer": false
 }

@@ -4,6 +4,7 @@
 #include <chrono>
 #include <labhelper.h>
 #include "scene/camera.h"
+#include <erosion.h>
 
 class ProceduralWorld {
 public:
@@ -43,6 +44,7 @@ private:
 	void GuiTexture();
 	void GuiTerrain();
 	void GuiNoiseSettings();
+	void GuiErosion();
 
 
 	// Generate Terrain
@@ -51,6 +53,7 @@ private:
 	void RegenerateTerrain();
 	void GenerateTerrain();
 	void UpdateHeightMap();
+	void ErodeHeightMap();
 
 
 	bool stopRunning = false;
@@ -143,5 +146,8 @@ private:
 
 	BaseTerrain m_terrain;
 	HeightMapGenerator heightMapGenerator;
+	Erosion erosion;
+	float maxChangeThreshold = 1;
+	int erosionIteration = 1;
 	Array2D<float> heightMap;
 };

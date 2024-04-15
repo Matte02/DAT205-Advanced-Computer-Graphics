@@ -210,6 +210,37 @@ void ProceduralWorld::UpdateHeightMap()
 
 
 
+void ProceduralWorld::ErodeHeightMap() {
+    // Copy the original terrain map
+    Array2D<float> originalHeightMapCopy(worldSettings.worldSize, worldSettings.worldSize);
+    for (int i = 0; i < heightMap.GetSize(); ++i) {
+        originalHeightMapCopy.Set(i, heightMap.Get(i));
+    }
+
+#if TIMING_ENABLED
+    auto start = std::chrono::high_resolution_clock::now();
+#endif
+    erosion.Erode(&heightMap, worldSettings.worldSize, erosionIteration, false);
+#if TIMING_ENABLED
+    auto end = std::chrono::high_resolution_clock::now(); // End timing
+    std::chrono::duration<double> duration = end - start;
+    std::cout << "Erosion time (" << erosionIteration << " iterations) : " << duration.count() << " seconds" << std::endl;
+#endif
+
+    // Compare the original map with the eroded map
+    for (int i = 0; i < heightMap.GetSize(); ++i) {
+        float originalHeight = originalHeightMapCopy.Get(i);
+        float erodedHeight = heightMap.Get(i);
+        float heightChange = std::abs(erodedHeight - originalHeight);
+        if (heightChange > maxChangeThreshold) {
+            std::cout << "Height at position " << i << " changed by " << heightChange << std::endl;
+        }
+    }
+    m_terrain.UpdateHeightMapHeights(&heightMap);
+}
+
+
+
 void ProceduralWorld::CreateShaderPrograms()
 {
 	CreateEnvoirmentShaders();

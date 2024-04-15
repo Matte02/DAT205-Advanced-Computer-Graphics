@@ -164,6 +164,52 @@ void ProceduralWorld::GuiTexture()
 	}
 }
 
+void ProceduralWorld::GuiErosion() {
+	if (ImGui::CollapsingHeader("Erosion")) {
+		ImGui::Indent();
+
+		ImGui::Text("Change Threshold:");
+		ImGui::SliderFloat("##Change Threshold", &maxChangeThreshold, 0, 10);
+		ImGui::Text("Erosion Radius:");
+		ImGui::SliderInt("##Erosion Radius", &erosion.erosionRadius, 2, 8);
+
+		ImGui::Text("Droplet Innertia:");
+		ImGui::SliderFloat("##Droplet Innertia", &erosion.inertia, 0, 1);
+		
+		ImGui::Text("Droplet Sediment Capacity Factor:");
+		ImGui::SliderFloat("##Droplet Sediment Capacity Factor", &erosion.sedimentCapacityFactor, 1, 20);
+
+		ImGui::Text("Droplet Minimum Sediment Capacity:");
+		ImGui::SliderFloat("##Droplet Minimum Sediment Capacity", &erosion.minSedimentCapacity, 0, 1);
+
+		ImGui::Text("Erode Speed:");
+		ImGui::SliderFloat("##Erode Speed", &erosion.erodeSpeed, 0, 1);
+
+		ImGui::Text("Deposit Speed:");
+		ImGui::SliderFloat("##Deposit Speed", &erosion.depositSpeed, 0, 1);
+
+		ImGui::Text("Gravity:");
+		ImGui::SliderFloat("##Gravity Gravity", &erosion.gravity, 0, 10);
+
+		ImGui::Text("Evaporation Speed:");
+		ImGui::SliderFloat("##Evaporation Evaporation", &erosion.evaporateSpeed, 0, 1);
+
+		ImGui::Text("Water Size:");
+		ImGui::SliderFloat("##Water Size", &erosion.initialWaterVolume, 1, 10000);
+
+		ImGui::Text("Max Droplet Life:");
+		ImGui::SliderInt("##Max Droplet Life", &erosion.maxDropletLifetime, 15, 45);
+
+		ImGui::Text("Iterations:");
+		ImGui::SliderInt("##Erosion Iterations", &erosionIteration, 1, 10000);
+		if (ImGui::Button("Erode Terrain")) {
+			ErodeHeightMap();
+		}
+
+		ImGui::Unindent();
+	}
+}
+
 void ProceduralWorld::GuiTerrain()
 {
 	if (ImGui::CollapsingHeader("Terrain Generation")) {
@@ -264,6 +310,7 @@ void ProceduralWorld::RenderGuiOverlay()
 	GuiTexture();
 
 	GuiTerrain();
+	GuiErosion();
 
 	////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////
