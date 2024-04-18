@@ -36,7 +36,9 @@ add_library ( ${PROJECT_NAME}
     perf.h
     perf.cpp
     technique.h
-    technique.cpp)
+    technique.cpp
+    texture.h
+    texture.cpp)
 
 if (MSVC)
 	set(CMAKE_CXX_FLAGS_DEBUG_MODEL "/O2")
