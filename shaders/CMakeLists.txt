@@ -6,6 +6,8 @@ project(shaders)
 file(GLOB_RECURSE SHADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.vert"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.frag"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.tesc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.tese"
 )
 
 # Add the shaders to a custom target (OPTIONAL)
