@@ -35,7 +35,8 @@ add_library ( ${PROJECT_NAME}
     imgui_impl_opengl3.h
     perf.h
     perf.cpp
-    )
+    technique.h
+    technique.cpp)
 
 if (MSVC)
 	set(CMAKE_CXX_FLAGS_DEBUG_MODEL "/O2")
