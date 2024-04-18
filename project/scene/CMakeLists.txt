@@ -12,7 +12,9 @@ add_library(scene
     lod_manager.h
     camera.h
     erosion.h 
-    erosion.cpp)
+    erosion.cpp
+    quad_list.cpp
+    quad_list.h)
 
 # Include the necessary directories for this library.
 target_include_directories(scene PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
