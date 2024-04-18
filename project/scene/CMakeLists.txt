@@ -14,7 +14,10 @@ add_library(scene
     erosion.h 
     erosion.cpp
     quad_list.cpp
-    quad_list.h)
+    quad_list.h
+    terrain_technique.h
+    terrain_technique.cpp
+    texture_config.h)
 
 # Include the necessary directories for this library.
 target_include_directories(scene PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
