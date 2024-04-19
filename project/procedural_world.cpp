@@ -23,11 +23,12 @@
 using namespace glm;
 
 constexpr auto SHADER_DIR = "../shaders/";
-ProceduralWorld::ProceduralWorld() {
+ProceduralWorld::ProceduralWorld() : m_terrain() {
 
 	g_window = labhelper::init_window_SDL("Procedural World");
 
 	InitializeWorld();
+
 
 
 	ENSURE_INITIALIZE_ONLY_ONCE();
@@ -104,13 +105,7 @@ void ProceduralWorld::Render()
 		labhelper::perf::Scope s("Background");
 		RenderBackground(projMatrix);
 	}
-	auto currentShaderProgram = TerrainShaders.at(terrrainShaderProgramIndex);
-
-	glUseProgram(currentShaderProgram);
-
-	labhelper::setUniformSlow(currentShaderProgram, "reversedLightDir", normalize(vec3(-lightPosition)));
-
-	m_terrain.Render(camera.getViewMatrix(), projMatrix, currentShaderProgram, camera.position);
+	m_terrain.Render(camera.getViewMatrix(), projMatrix, camera.position, normalize(vec3(-lightPosition)));
 }
 
 void ProceduralWorld::RenderBackground(const mat4& projectionMatrix)
@@ -244,7 +239,7 @@ void ProceduralWorld::ErodeHeightMap() {
 void ProceduralWorld::CreateShaderPrograms()
 {
 	CreateEnvoirmentShaders();
-	CreateTerrainShaders();
+	//CreateTerrainShaders();
 
 }
 

@@ -9,28 +9,21 @@
 #include "terrain.h"
 #include "labhelper.h"
 #include <Model.h>
+#include "texture_config.h"
 
-void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int PatchSizePower, const std::vector<std::string>& TextureFilenames, Array2D<float>* heightMap)
+void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, const std::vector<std::string>& TextureFilenames, Array2D<float>* heightMap)
 {
-
-
-    m_patchSize = pow(2, PatchSizePower) + 1;
-
-    int i = 0;
-    while (true) {
-        int RecommendedWorldSize = ((WorldSize - i - 1 + m_patchSize - 1) / (m_patchSize - 1)) * (m_patchSize - 1) + 1;
-        i++;
-        if (RecommendedWorldSize <= WorldSize) {
-
-            printf("Setting World Size to: %d\n", RecommendedWorldSize);
-            m_terrainSize = RecommendedWorldSize;
-            break;
-        }
+    if (!m_technique.Init()) {
+        printf("Error initializing tech\n");
+        exit(0);
     }
+
+    m_numPatches = numPatches;
     m_worldScale = WorldScale;
     m_textureScale = TextureScale;
+    m_terrainSize = WorldSize;
+
     heightMap->GetMinMax(m_minHeight, m_maxHeight);
-    
     m_heightMap = heightMap;
 
     std::vector<std::string> textureNames(TextureFilenames.begin(), TextureFilenames.begin() + TextureFilenames.size() / 2);
@@ -38,7 +31,10 @@ void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScal
     InitTextures(textureNames, m_pTextures);
     InitTextures(textureNames, m_pTextureNormals);
 
-    m_geomipGrid.CreateGeomipGrid(m_terrainSize, m_terrainSize, m_patchSize, this);
+
+    m_quadList.CreateQuadList(WorldSize, WorldSize, this);
+
+    m_heightMapTexture.LoadF32(m_terrainSize, m_terrainSize, m_heightMap->GetBaseAddr());
 }
 
 void BaseTerrain::UpdateHeightMapHeights(Array2D<float>* heightMap)
@@ -50,8 +46,6 @@ void BaseTerrain::UpdateHeightMapHeights(Array2D<float>* heightMap)
 
     heightMap->GetMinMax(m_minHeight, m_maxHeight);
     m_heightMap = heightMap;
-
-    m_geomipGrid.UpdateVertices(this);
 }
 
 
@@ -91,7 +85,7 @@ BaseTerrain::~BaseTerrain()
 
 void BaseTerrain::Destroy()
 {
-    m_geomipGrid.Destroy();
+    m_quadList.Destroy();
 
     for (int i = 0; i < 6; i++) {
         if (m_pTextures[i].valid && m_pTextures[i].gl_id != 0) {
@@ -104,33 +98,16 @@ void BaseTerrain::Destroy()
 
 }
 
-void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projMatrix, GLuint currentShaderProgram, const vec3& CameraPos)
+void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projectionMatrix, const vec3& CameraPos, const vec3& lightDirection)
 {
-    glUseProgram(currentShaderProgram);
-    labhelper::setUniformSlow(currentShaderProgram, "viewMatrix", viewMatrix);
-    labhelper::setUniformSlow(currentShaderProgram, "projectionMatrix", projMatrix);
 
-    labhelper::setUniformSlow(currentShaderProgram, "max_height", m_maxHeight);
+    m_technique.Enable();
+    m_technique.SetViewMatrix(viewMatrix);
+    m_technique.SetViewProjectionMatrix(projectionMatrix * viewMatrix);
+    //m_technique.SetLightDir(lightDirection);
 
-    labhelper::setUniformSlow(currentShaderProgram, "TextureScale", m_textureScale);
+    m_heightMapTexture.Bind(HEIGHT_MAP_TEXTURE_UNIT);
 
-    labhelper::setUniformSlow(currentShaderProgram, "slopeThreshold", m_slope);
-    labhelper::setUniformSlow(currentShaderProgram, "slopeMixRange", m_slopeRange);
-
-    for (int i = 0; i < 4; i++) {
-        std::string name = "height" + std::to_string(i);
-        labhelper::setUniformSlow(currentShaderProgram, name.c_str(), m_pTerrainHeghts[i]);
-    }
-
-    for (int i = 0x0; i < 6; i++) {
-         glActiveTexture(GL_TEXTURE5+i);
-         glBindTexture(GL_TEXTURE_2D, m_pTextures[i].gl_id);
-    }
-    for (int i = 0x0; i < 6; i++) {
-        glActiveTexture(GL_TEXTURE11 + i);
-        glBindTexture(GL_TEXTURE_2D, m_pTextureNormals[i].gl_id);
-    }
-
-    m_geomipGrid.Render(CameraPos);
+    m_quadList.Render();
 }
 

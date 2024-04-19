@@ -113,8 +113,8 @@ private:
 	struct WorldSettings {
 		float worldScale = 1.0f;
 		int worldSize = 993;
-		float textureScale = 0.070;
-		int patchSize = 5;
+		float textureScale = 0.070f;
+		int patchSize = 32;
 	};
 	// TODO: LOOK OVER
 	struct SlopeSettings {
