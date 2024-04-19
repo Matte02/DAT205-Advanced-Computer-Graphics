@@ -32,7 +32,7 @@ void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScal
     InitTextures(textureNames, m_pTextureNormals);
 
 
-    m_quadList.CreateQuadList(WorldSize, WorldSize, this);
+    m_quadList.CreateQuadList(numPatches, numPatches, this);
 
     m_heightMapTexture.LoadF32(m_terrainSize, m_terrainSize, m_heightMap->GetBaseAddr());
 }
@@ -46,6 +46,7 @@ void BaseTerrain::UpdateHeightMapHeights(Array2D<float>* heightMap)
 
     heightMap->GetMinMax(m_minHeight, m_maxHeight);
     m_heightMap = heightMap;
+    m_heightMapTexture.LoadF32(m_terrainSize, m_terrainSize, m_heightMap->GetBaseAddr());
 }
 
 

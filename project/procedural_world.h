@@ -111,9 +111,9 @@ private:
 
 	// TODO: LOOK OVER
 	struct WorldSettings {
-		float worldScale = 1.0f;
-		int worldSize = 993;
-		float textureScale = 0.070f;
+		float worldScale = 64.0f;
+		int worldSize = 2048;
+		float textureScale = 1;
 		int patchSize = 32;
 	};
 	// TODO: LOOK OVER

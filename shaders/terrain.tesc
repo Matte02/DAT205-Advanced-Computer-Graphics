@@ -29,7 +29,7 @@ void main()
     float Len11 = distance(ViewSpacePos11, vec4(0,0,0,1));
 
     const float MIN_DISTANCE = 5;
-    const float MAX_DISTANCE = 1024;
+    const float MAX_DISTANCE = 2048;
 
     // Step 3: map the distance to [0,1]        
     float Distance00 = clamp((Len00 - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
@@ -38,14 +38,14 @@ void main()
     float Distance11 = clamp((Len11 - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
 
     const int MIN_TESS_LEVEL = 1;
-    const int MAX_TESS_LEVEL = 6;
+    const int MAX_TESS_LEVEL = 7;
 
     // Step 4: interpolate edge tessellation level based on the closest vertex
     //         on each edge
-    float TessLevel0 = floor(mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(Distance10, Distance00) ));
-    float TessLevel1 = floor(mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(Distance00, Distance01) ));
-    float TessLevel2 = floor(mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(Distance01, Distance11) ));
-    float TessLevel3 = floor(mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(Distance11, Distance10) ));
+    float TessLevel0 = mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(Distance10, Distance00) );
+    float TessLevel1 = mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(Distance00, Distance01) );
+    float TessLevel2 = mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(Distance01, Distance11) );
+    float TessLevel3 = mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(Distance11, Distance10) );
 
     // Step 5: set the outer edge tessellation levels
     gl_TessLevelOuter[0] = TessLevel0;
