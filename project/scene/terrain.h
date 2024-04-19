@@ -21,7 +21,7 @@ public:
 	// Should only be used if the heights of the height map has changed, not when changing size or scale.
 	void UpdateHeightMapHeights(Array2D<float>* heightMap);
 
-	void Render(const mat4 viewMatrix, const mat4 projMatrix, const vec3& CameraPos, const vec3& lightDirection);
+	void Render(const mat4 viewMatrix, const mat4 projMatrix, const vec3& CameraPos, const vec3& lightDirection, const int viewMode);
 
 	// Returns 
 	float GetHeight(int x, int z) const { return m_heightMap->Get(x, z); }

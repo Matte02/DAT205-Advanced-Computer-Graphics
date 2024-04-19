@@ -9,6 +9,16 @@ TerrainTechnique::TerrainTechnique()
 
 }
 
+void TerrainTechnique::Enable() {
+	glUseProgram(m_shaderProg);
+
+	glUniform1f(m_maxDistanceLoc, m_maxDistance);
+	glUniform1f(m_minDistanceLoc, m_minDistance);
+
+	glUniform1i(m_maxTessLevelLoc, m_maxTessLevel);
+	glUniform1i(m_minTessLevelLoc, m_minTessLevel);
+}
+
 bool TerrainTechnique::Init()
 {
 	if (!Technique::Init()) {
@@ -35,15 +45,29 @@ bool TerrainTechnique::Init()
 		return false;
 	}
 
-	m_ViewProjectionLoc = GetUniformLocation("viewProjectionMatrix");
-	m_ViewLoc = GetUniformLocation("viewMatrix");
+	m_viewModeLoc = GetUniformLocation("u_viewMode");
+	m_ViewProjectionLoc = GetUniformLocation("u_viewProjectionMatrix");
+	m_ViewLoc = GetUniformLocation("u_viewMatrix");
 	//m_reversedLightDirLoc = GetUniformLocation("reversedLightDir");
-	m_heightMapLoc = GetUniformLocation("heightMap");
+	m_heightMapLoc = GetUniformLocation("u_heightMap");
+	m_maxHeightLoc = GetUniformLocation("u_maxHeight");
+	m_maxDistanceLoc = GetUniformLocation("u_maxDistance");
+	m_minDistanceLoc = GetUniformLocation("u_minDistance");
+	m_maxTessLevelLoc = GetUniformLocation("u_maxTessLevel");
+	m_minTessLevelLoc = GetUniformLocation("u_minTessLevel");
+	
 
-	if (m_ViewProjectionLoc == INVALID_UNIFORM_LOCATION ||
-		m_ViewLoc == INVALID_UNIFORM_LOCATION ||
+	if (m_viewModeLoc		== INVALID_UNIFORM_LOCATION ||
+		m_ViewProjectionLoc == INVALID_UNIFORM_LOCATION ||
+		m_ViewLoc			== INVALID_UNIFORM_LOCATION ||
+		m_heightMapLoc		== INVALID_UNIFORM_LOCATION ||
+		m_maxHeightLoc		== INVALID_UNIFORM_LOCATION ||
+		m_maxDistanceLoc	== INVALID_UNIFORM_LOCATION ||
+		m_minDistanceLoc	== INVALID_UNIFORM_LOCATION ||
+		m_maxTessLevelLoc	== INVALID_UNIFORM_LOCATION ||
+		m_minTessLevelLoc	== INVALID_UNIFORM_LOCATION 
 		//m_reversedLightDirLoc == INVALID_UNIFORM_LOCATION ||
-		m_heightMapLoc == INVALID_UNIFORM_LOCATION) {
+		) {
 		return false;
 	}
 
@@ -71,4 +95,14 @@ void TerrainTechnique::SetLightDir(const vec3& lightDirection)
 	vec3 ReversedLightDir = lightDirection * -1.0f;
 	ReversedLightDir = normalize(ReversedLightDir);
 	glUniform3f(m_reversedLightDirLoc, ReversedLightDir.x, ReversedLightDir.y, ReversedLightDir.z);
+}
+
+void TerrainTechnique::SetMaxHeight(const float maxHeight)
+{
+	glUniform1f(m_maxHeightLoc, maxHeight);
+}
+
+void TerrainTechnique::SetViewMode(const int viewMode)
+{
+	glUniform1i(m_viewModeLoc, viewMode);
 }

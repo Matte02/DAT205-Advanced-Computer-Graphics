@@ -105,7 +105,7 @@ void ProceduralWorld::Render()
 		labhelper::perf::Scope s("Background");
 		RenderBackground(projMatrix);
 	}
-	m_terrain.Render(camera.getViewMatrix(), projMatrix, camera.position, normalize(vec3(-lightPosition)));
+	m_terrain.Render(camera.getViewMatrix(), projMatrix, camera.position, normalize(vec3(-lightPosition)), viewMode);
 }
 
 void ProceduralWorld::RenderBackground(const mat4& projectionMatrix)
@@ -153,7 +153,11 @@ void ProceduralWorld::InitializeWorld()
 	GenerateTerrain();
 
 	// Init Camera
-	camera.position = vec3(140.0f, 50.0f, 140.0f);
+
+	int cord = worldSettings.worldSize / 2;
+	float height = heightMap.At(cord, cord);
+
+	camera.position = vec3(cord, height + 50.0f, cord);
 	camera.direction = normalize(vec3(0.0f) - camera.position);
 	camera.speed = 50;
 

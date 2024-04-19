@@ -17,7 +17,7 @@ struct NoiseSettings {
 	int octaves = 6;
 	float sampleScale = 0.005f;
 	float minHeight = 0.0f;
-	float maxHeight = 100.0f;
+	float maxHeight = 250.0f;
 	float ridgeOffset = 1;
 	vec3 sampleOffset{ 0 };
 	ivec3 wrap{ 0 };

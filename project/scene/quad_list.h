@@ -29,7 +29,7 @@ private:
 		vec3 Pos;
 		vec2 Tex;
 
-		void InitVertex(const BaseTerrain* pTerrain, int x, int z);
+		void InitVertex(const BaseTerrain* pTerrain, int width, int depth, int x, int z);
 	};
 
 	void CreateGLState();

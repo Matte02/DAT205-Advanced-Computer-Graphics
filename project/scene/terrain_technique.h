@@ -10,6 +10,8 @@ class TerrainTechnique : public Technique
 public:
     TerrainTechnique();
 
+    void Enable();
+
     virtual bool Init();
 
     void SetViewProjectionMatrix(const mat4& viewProjectionMatrix);
@@ -18,12 +20,33 @@ public:
 
     void SetLightDir(const vec3& lightDirection);
 
+    void SetMaxHeight(const float maxHeight);
+
+    void SetViewMode(const int viewMode);
 private:
+    GLuint m_viewModeLoc = -1;
+
     GLuint m_ViewProjectionLoc = -1;
     GLuint m_ViewLoc = -1;
 
     GLuint m_reversedLightDirLoc = -1;
     GLuint m_heightMapLoc = -1;
+    GLuint m_maxHeightLoc = -1;
 
+    // Max Distance (Least amount of detail)
+    GLuint m_maxDistanceLoc = -1;
+    float m_maxDistance = 1024;
+
+    // Min Distance (Most amount of detail)
+    GLuint m_minDistanceLoc = -1;
+    float m_minDistance = 5;
+
+    // Max Tessellation Level
+    GLuint m_maxTessLevelLoc = -1;
+    int m_maxTessLevel = 6;
+
+    // Min Tessellation Level
+    GLuint m_minTessLevelLoc = -1;
+    int m_minTessLevel = 0;
 };
 #endif  /* TERRAIN_TECHNIQUE_H */

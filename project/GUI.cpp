@@ -121,8 +121,8 @@ void ProceduralWorld::GuiTexture()
 	if (ImGui::CollapsingHeader("Texture")) {
 		ImGui::Indent();
 
-		ImGui::Text("Shader Program:");
-		if (ImGui::SliderInt("##Shader Program", &terrrainShaderProgramIndex, 0, (int)TerrainShaders.size() - 1))
+		ImGui::Text("View Mode:");
+		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 1))
 
 			ImGui::Text("Texture Scale:");
 		if (ImGui::SliderFloat("##Texture Scale", &worldSettings.textureScale, 0.0f, 0.1f))

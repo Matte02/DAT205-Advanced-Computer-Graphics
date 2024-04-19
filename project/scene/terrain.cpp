@@ -99,12 +99,14 @@ void BaseTerrain::Destroy()
 
 }
 
-void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projectionMatrix, const vec3& CameraPos, const vec3& lightDirection)
+void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projectionMatrix, const vec3& CameraPos, const vec3& lightDirection, const int viewMode)
 {
 
     m_technique.Enable();
     m_technique.SetViewMatrix(viewMatrix);
     m_technique.SetViewProjectionMatrix(projectionMatrix * viewMatrix);
+    m_technique.SetMaxHeight(m_maxHeight);
+    m_technique.SetViewMode(viewMode);
     //m_technique.SetLightDir(lightDirection);
 
     m_heightMapTexture.Bind(HEIGHT_MAP_TEXTURE_UNIT);

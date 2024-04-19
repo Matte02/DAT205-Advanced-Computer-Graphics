@@ -6,8 +6,21 @@ layout(location = 0) out vec4 fragmentColor;
 
 
 in vec2 Tex3;
-in float Color;
+in float Height;
+
+uniform float u_maxHeight;
+uniform int u_viewMode;
+
+// Function to map height to grayscale color
+float mapHeightToColor(float height) {
+    return height / u_maxHeight;
+}
+
 void main()
 {
-	fragmentColor = vec4(Color, Color, Color, 1.0f);
+	if (u_viewMode == 1) {
+		fragmentColor = vec4(Tex3.x, Tex3.y, 0.0f, 1.0f);
+	} else {
+		fragmentColor= vec4(vec3(mapHeightToColor(Height)), 1.0f);
+	}
 }
