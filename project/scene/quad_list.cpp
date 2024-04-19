@@ -128,21 +128,25 @@ void QuadList::InitIndices(std::vector<unsigned int>& Indices)
 	for (int z = 0; z < m_depth - 1; z++) {
 		for (int x = 0; x < m_width - 1; x++) {
 			// Add a single quad
-			assert(Index < Indices.size());
-			unsigned int IndexBottomLeft = z * m_width + x;
-			Indices[Index++] = IndexBottomLeft;
+
 
 			assert(Index < Indices.size());
 			unsigned int IndexBottomRight = z * m_width + x + 1;
 			Indices[Index++] = IndexBottomRight;
 
 			assert(Index < Indices.size());
-			unsigned int IndexTopLeft = (z + 1) * m_width + x;
-			Indices[Index++] = IndexTopLeft;
+			unsigned int IndexBottomLeft = z * m_width + x;
+			Indices[Index++] = IndexBottomLeft;
 
 			assert(Index < Indices.size());
 			unsigned int IndexTopRight = (z + 1) * m_width + x + 1;
 			Indices[Index++] = IndexTopRight;
+
+			assert(Index < Indices.size());
+			unsigned int IndexTopLeft = (z + 1) * m_width + x;
+			Indices[Index++] = IndexTopLeft;
+
+
 		}
 	}
 

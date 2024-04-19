@@ -1,5 +1,5 @@
-#ifndef TRIANGLE_LIST_H
-#define TRIANGLE_LIST_H
+#ifndef QUAD_LIST_H
+#define QUAD_LIST_H
 
 #include <GL/glew.h>
 #include <vector>
