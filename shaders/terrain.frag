@@ -9,5 +9,5 @@ in vec2 Tex3;
 in float Color;
 void main()
 {
-	fragmentColor = Color;
+	fragmentColor = vec4(Color, Color, Color, 1.0f);
 }

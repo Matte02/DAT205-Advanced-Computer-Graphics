@@ -9,14 +9,13 @@ in vec2 Tex2[];
 out vec2 Tex3;
 out float Color;
 
-uniform float max_height;
-uniform sampler2D gHeightMap;
-uniform mat4 gVP;
+uniform sampler2D heightMap;
+uniform mat4 viewProjectionMatrix;
 
 // Function to map height to grayscale color
 float mapHeightToColor(float height) {
     // Map height to grayscale color
-    float t = (height) / (max_height);
+    float t = (height) / (100);
     return t;
 }
 
@@ -37,7 +36,7 @@ void main()
     Tex3 = (t1 - t0) * v + t0;          // final interpolation
 
     // sample the height from the height map
-    float height = texture(gHeightMap, Tex3).x;   
+    float height = texture(heightMap, Tex3).x;   
     Color = mapHeightToColor(height);
 
     // get the position for each vertex
@@ -51,8 +50,8 @@ void main()
     vec4 p1 = (p11 - p10) * u + p10;
     vec4 p = (p1 - p0) * v + p0;
     
-    p.y += Height;  // add the sampled height
+    p.y += height;  // add the sampled height
 
     // transform from world to clip space
-    gl_Position = gVP * p;
+    gl_Position = viewProjectionMatrix * p;
 }
