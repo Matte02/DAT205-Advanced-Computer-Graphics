@@ -4,8 +4,6 @@ add_library(scene
     terrain.h
     triangle_list.cpp
     triangle_list.h
-    height_map_generator.h
-    height_map_generator.cpp
     geomip_grid.h
     geomip_grid.cpp
     lod_manager.cpp
@@ -17,7 +15,10 @@ add_library(scene
     quad_list.h
     terrain_technique.h
     terrain_technique.cpp
-    texture_config.h)
+    texture_config.h
+    generation_technique.h
+    generation_technique.cpp
+    NoiseSettings.h)
 
 # Include the necessary directories for this library.
 target_include_directories(scene PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

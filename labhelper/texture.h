@@ -12,6 +12,8 @@ public:
 
     Texture(GLenum TextureTarget);
 
+    ~Texture();
+
     // Should be called once to load the texture
     bool Load();
 
@@ -28,6 +30,8 @@ public:
     // Must be called at least once for the specific texture unit
     void Bind(GLenum TextureUnit);
 
+    void BindImage(GLenum ImageUnit, GLenum access);
+
     void GetImageSize(int& ImageWidth, int& ImageHeight)
     {
         ImageWidth = m_imageWidth;
@@ -43,6 +47,7 @@ private:
 
     std::string m_fileName;
     GLenum m_textureTarget;
+    GLenum format;
     GLuint m_textureObj;
     int m_imageWidth = 0;
     int m_imageHeight = 0;

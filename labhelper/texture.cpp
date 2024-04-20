@@ -18,6 +18,15 @@ Texture::Texture(GLenum TextureTarget)
 	m_textureTarget = TextureTarget;
 }
 
+Texture::~Texture()
+{
+	if (m_textureObj != 0)
+	{
+		glDeleteTextures(1, &m_textureObj);
+		m_textureObj = 0;
+	}
+}
+
 
 void Texture::Load(unsigned int BufferSize, void* pData)
 {
@@ -138,7 +147,8 @@ void Texture::LoadF32(int Width, int Height, const float* pImageData)
 void Texture::CreateEmpty32FTexture(int width, int height) {
 	m_imageWidth = width;
 	m_imageHeight = height;
-	m_imageBPP = 1; // Assuming RGBA format
+	m_imageBPP = 4; // Assuming RGBA format
+	format = GL_R32F;
 
 	glCreateTextures(m_textureTarget, 1, &m_textureObj);
 	glTextureStorage2D(m_textureObj, 1, GL_R32F, m_imageWidth, m_imageHeight); // Using GL_R32F format
@@ -157,6 +167,11 @@ void Texture::CreateEmpty32FTexture(int width, int height) {
 void Texture::Bind(GLenum TextureUnit)
 {
 	BindInternalDSA(TextureUnit);
+}
+
+void Texture::BindImage(GLenum ImageUnit, GLenum access)
+{
+	glBindImageTexture(ImageUnit - GL_TEXTURE0, m_textureObj, 0, GL_FALSE, 0, access, format);
 }
 
 void Texture::BindInternalDSA(GLenum TextureUnit)

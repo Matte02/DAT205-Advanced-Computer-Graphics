@@ -5,6 +5,8 @@
 #include <GL/glew.h>
 #include <string>
 
+#define INVALID_UNIFORM_LOCATION 0xffffffff
+
 class Technique
 {
 public:
@@ -15,7 +17,7 @@ public:
 
     virtual bool Init();
 
-    void Enable();
+    virtual void Enable();
 
     GLuint GetProgram() const { return m_shaderProg; }
 
@@ -31,7 +33,6 @@ protected:
 
 private:
 
-    bool ReadFile(const char* pFileName, std::string& outFile);
     typedef std::list<GLuint> ShaderObjList;
     ShaderObjList m_shaderObjList;
 };

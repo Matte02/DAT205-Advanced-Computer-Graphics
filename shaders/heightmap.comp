@@ -1,16 +1,16 @@
 #version 460 core
 
 layout (local_size_x = 32, local_size_y = 32) in; // Unsure about these values
-layout (rgba8, binding = 0) uniform image2D heightmap; // Is the rgba8 correct?
+layout (r32f, binding = 4) uniform image2D heightmap;
 
 #include incl_noise.glsl
 
-uniform float lacunarity;
-uniform float persistance;
-uniform int octaves;
-uniform float noise_scale;
-uniform float exponent;
-uniform vec2 offsets[16];
+uniform float u_lacunarity;
+uniform float u_persistence;
+uniform int u_octaves;
+uniform float u_noiseScale;
+uniform float u_exponent;
+uniform vec2 u_offsets[16];
 
 float fbm(vec2 coordinate)
 {
@@ -21,24 +21,24 @@ float fbm(vec2 coordinate)
     float frequency = 1.0;
     float weights = 0.0;
 
-    // Loop of octaves
-    for (int i = 0; i < octaves; i++)
+    // Loop of u_octaves
+    for (int i = 0; i < u_octaves; i++)
     {
-        vec2 sample_coordinates = (frequency * noise_scale * coordinate) + (frequency * offsets[i]);
+        vec2 sample_coordinates = (frequency * u_noiseScale * coordinate) + (frequency * u_offsets[i]);
         value += amplitude * (0.5 + 0.5 * snoise(sample_coordinates));
         weights += amplitude;
-        frequency *= lacunarity;
-        amplitude *= persistance;
+        frequency *= u_lacunarity;
+        amplitude *= u_persistence;
     }
 
     float height = value / weights;
-    return pow(height, exponent);
+    return pow(height, u_exponent);
 }
 
 void main()
 {
     ivec2 texel_coord = ivec2(gl_GlobalInvocationID.xy);
-    vec2 spatial_coordinate = gl_GlobalInvocationID.xy / 2048.0; // What does the 2048 mean? Maybe move to uniform to see how it affects result.
+    vec2 spatial_coordinate = gl_GlobalInvocationID.xy / 2048.0f; // What does the 2048 mean? Maybe move to uniform to see how it affects result.
     float height = fbm(spatial_coordinate);
     vec4 value = vec4(height);
     imageStore(heightmap, texel_coord, value);

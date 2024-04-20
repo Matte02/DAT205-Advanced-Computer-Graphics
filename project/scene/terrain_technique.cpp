@@ -1,7 +1,6 @@
 #include "terrain_technique.h"
 #include "texture_config.h"
 
-#define INVALID_UNIFORM_LOCATION 0xffffffff
 constexpr auto SHADER_DIR = "../shaders/";
 
 TerrainTechnique::TerrainTechnique()
@@ -10,7 +9,7 @@ TerrainTechnique::TerrainTechnique()
 }
 
 void TerrainTechnique::Enable() {
-	glUseProgram(m_shaderProg);
+	Technique::Enable();
 
 	glUniform1f(m_maxDistanceLoc, m_maxDistance);
 	glUniform1f(m_minDistanceLoc, m_minDistance);
@@ -48,7 +47,6 @@ bool TerrainTechnique::Init()
 	m_viewModeLoc = GetUniformLocation("u_viewMode");
 	m_ViewProjectionLoc = GetUniformLocation("u_viewProjectionMatrix");
 	m_ViewLoc = GetUniformLocation("u_viewMatrix");
-	//m_reversedLightDirLoc = GetUniformLocation("reversedLightDir");
 	m_heightMapLoc = GetUniformLocation("u_heightMap");
 	m_maxHeightLoc = GetUniformLocation("u_maxHeight");
 	m_maxDistanceLoc = GetUniformLocation("u_maxDistance");
@@ -66,7 +64,6 @@ bool TerrainTechnique::Init()
 		m_minDistanceLoc	== INVALID_UNIFORM_LOCATION ||
 		m_maxTessLevelLoc	== INVALID_UNIFORM_LOCATION ||
 		m_minTessLevelLoc	== INVALID_UNIFORM_LOCATION 
-		//m_reversedLightDirLoc == INVALID_UNIFORM_LOCATION ||
 		) {
 		return false;
 	}

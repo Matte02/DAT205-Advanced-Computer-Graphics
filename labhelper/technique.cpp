@@ -6,8 +6,6 @@
 #include <fstream>
 #include "shading_include.h"
 
-#define INVALID_UNIFORM_LOCATION 0xffffffff
-
 Technique::Technique()
 {
     m_shaderProg = 0;
@@ -133,22 +131,4 @@ GLint Technique::GetUniformLocation(const char* pUniformName)
     }
 
     return Location;
-}
-
-bool Technique::ReadFile(const char* pFileName, std::string& outFile)
-{
-    std::ifstream f(pFileName);
-
-    bool ret = false;
-
-    if (f.is_open()) {
-        std::string line;
-        while (getline(f, line)) {
-            outFile.append(line);
-            outFile.append("\n");
-        }
-        f.close();
-        ret = true;
-    }
-    return ret;
 }

@@ -10,7 +10,7 @@ class TerrainTechnique : public Technique
 public:
     TerrainTechnique();
 
-    void Enable();
+    virtual void Enable();
 
     virtual bool Init();
 

@@ -35,12 +35,12 @@ ProceduralWorld::ProceduralWorld() : m_terrain() {
 	CreateShaderPrograms();
 
 	glEnable(GL_DEPTH_TEST); // enable Z-buffering
-	glEnable(GL_CULL_FACE);  // enables backface culling
+	//glEnable(GL_CULL_FACE);  // enables backface culling
 
 }
 
 ProceduralWorld::~ProceduralWorld() {
-	heightMap.Destroy();
+
 }
 
 void ProceduralWorld::Run() {
@@ -155,7 +155,7 @@ void ProceduralWorld::InitializeWorld()
 	// Init Camera
 
 	int cord = worldSettings.worldSize / 2;
-	float height = heightMap.At(cord, cord);
+	float height = 100;
 
 	camera.position = vec3(cord, height + 50.0f, cord);
 	camera.direction = normalize(vec3(0.0f) - camera.position);
@@ -166,8 +166,8 @@ void ProceduralWorld::RegenerateTerrain() {
 #if TIMING_ENABLED
 	auto start = std::chrono::high_resolution_clock::now();
 #endif
-	m_terrain.Destroy();
-	GenerateTerrain();
+	m_terrain.UpdateTerrain(worldSettings.patchSize, worldSettings.worldScale, worldSettings.textureScale);
+	m_terrain.UpdateTerrain(noiseSettings, worldSettings.worldSize);
 #if TIMING_ENABLED
 	auto end = std::chrono::high_resolution_clock::now(); // End timing
 	std::chrono::duration<double> duration = end - start;
@@ -180,16 +180,13 @@ void ProceduralWorld::GenerateTerrain()
 {
 	// TODO: LOOK OVER SLOPE IN SHADERS
 	m_terrain.setSlope(slopeSettings.slope, slopeSettings.slopeRange);
-
-
-	heightMapGenerator.GenerateHeightMap(&heightMap, worldSettings.worldSize, true);
 	// FIX AS WELL
 	m_terrain.InitTerrain(worldSettings.worldScale,
 		worldSettings.worldSize,
 		worldSettings.textureScale,
 		worldSettings.patchSize,
 		textFilenames,
-		&heightMap);
+		noiseSettings);
 }
 
 void ProceduralWorld::UpdateHeightMap()
@@ -197,45 +194,14 @@ void ProceduralWorld::UpdateHeightMap()
 #if TIMING_ENABLED
 	auto start = std::chrono::high_resolution_clock::now();
 #endif
-	heightMapGenerator.GenerateHeightMap(&heightMap, worldSettings.worldSize, true);
-	m_terrain.UpdateHeightMapHeights(&heightMap);
+	m_terrain.UpdateTerrain(noiseSettings);
+
 
 #if TIMING_ENABLED
 	auto end = std::chrono::high_resolution_clock::now(); // End timing
 	std::chrono::duration<double> duration = end - start;
 	std::cout << "Time taken for generating new heightmap and updating the vertices: " << duration.count() << " seconds" << std::endl;
 #endif
-}
-
-
-
-void ProceduralWorld::ErodeHeightMap() {
-    // Copy the original terrain map
-    Array2D<float> originalHeightMapCopy(worldSettings.worldSize, worldSettings.worldSize);
-    for (int i = 0; i < heightMap.GetSize(); ++i) {
-        originalHeightMapCopy.Set(i, heightMap.Get(i));
-    }
-
-#if TIMING_ENABLED
-    auto start = std::chrono::high_resolution_clock::now();
-#endif
-    erosion.Erode(&heightMap, worldSettings.worldSize, erosionIteration, false);
-#if TIMING_ENABLED
-    auto end = std::chrono::high_resolution_clock::now(); // End timing
-    std::chrono::duration<double> duration = end - start;
-    std::cout << "Erosion time (" << erosionIteration << " iterations) : " << duration.count() << " seconds" << std::endl;
-#endif
-
-    // Compare the original map with the eroded map
-    for (int i = 0; i < heightMap.GetSize(); ++i) {
-        float originalHeight = originalHeightMapCopy.Get(i);
-        float erodedHeight = heightMap.Get(i);
-        float heightChange = std::abs(erodedHeight - originalHeight);
-        if (heightChange > maxChangeThreshold) {
-            std::cout << "Height at position " << i << " changed by " << heightChange << std::endl;
-        }
-    }
-    m_terrain.UpdateHeightMapHeights(&heightMap);
 }
 
 

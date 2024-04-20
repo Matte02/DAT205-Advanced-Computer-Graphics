@@ -39,7 +39,7 @@ add_library ( ${PROJECT_NAME}
     technique.cpp
     texture.h
     texture.cpp 
-    shading_include.h)
+    shading_include.h )
 
 if (MSVC)
 	set(CMAKE_CXX_FLAGS_DEBUG_MODEL "/O2")

@@ -167,7 +167,7 @@ void GeomipGrid::InitVertices(const BaseTerrain* pTerrain, std::vector<Vertex>& 
 
 void GeomipGrid::Vertex::InitVertex(const BaseTerrain* pTerrain, int x, int z)
 {
-	float y = pTerrain->GetHeight(x, z);
+	float y = 0; //pTerrain->GetHeight(x, z);
 
 	float WorldScale = pTerrain->GetWorldScale();
 	Pos = vec3(x * WorldScale, y, z * WorldScale);

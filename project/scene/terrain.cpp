@@ -11,10 +11,14 @@
 #include <Model.h>
 #include "texture_config.h"
 
-void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, const std::vector<std::string>& TextureFilenames, Array2D<float>* heightMap)
+void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, const std::vector<std::string>& TextureFilenames, NoiseSettings settings)
 {
     if (!m_technique.Init()) {
         printf("Error initializing tech\n");
+        exit(0);
+    }
+    if (!m_heightMapGen.Init()) {
+        printf("Error initializing generation tech\n");
         exit(0);
     }
 
@@ -23,9 +27,6 @@ void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScal
     m_textureScale = TextureScale;
     m_terrainSize = WorldSize;
 
-    heightMap->GetMinMax(m_minHeight, m_maxHeight);
-    m_heightMap = heightMap;
-
     std::vector<std::string> textureNames(TextureFilenames.begin(), TextureFilenames.begin() + TextureFilenames.size() / 2);
     std::vector<std::string> TextureNormalNames(TextureFilenames.begin() + TextureFilenames.size() / 2, TextureFilenames.end());
     InitTextures(textureNames, m_pTextures);
@@ -33,20 +34,39 @@ void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScal
 
 
     m_quadList.CreateQuadList(numPatches, numPatches, this);
+    m_heightMapTexture.CreateEmpty32FTexture(m_terrainSize , m_terrainSize);
 
-    m_heightMapTexture.LoadF32(m_terrainSize, m_terrainSize, m_heightMap->GetBaseAddr());
+    m_heightMapTexture.BindImage(HEIGHT_MAP_TEXTURE_UNIT, GL_READ_ONLY);
+    m_heightMapGen.GenerateHeightMap(m_terrainSize, m_terrainSize, settings);
+    m_maxHeight = settings.maxHeight;
+    m_minHeight = settings.minHeight;
 }
 
-void BaseTerrain::UpdateHeightMapHeights(Array2D<float>* heightMap)
-{
-    if (heightMap->GetSize() < m_terrainSize * m_terrainSize) {
-        printf("Height map size is smaller than terrain size. Reinitlize terrain instead of Updating Heights.");
-        exit(1);
-    }
+void BaseTerrain::UpdateTerrain(int numPatches, float WorldScale, float TextureScale) {
+    // Clean up
+    m_quadList.~QuadList();
 
-    heightMap->GetMinMax(m_minHeight, m_maxHeight);
-    m_heightMap = heightMap;
-    m_heightMapTexture.LoadF32(m_terrainSize, m_terrainSize, m_heightMap->GetBaseAddr());
+    // Set new values
+    m_numPatches = numPatches;
+    m_worldScale = WorldScale;
+    m_textureScale = TextureScale;
+
+    // Recreate QuadList
+    m_quadList.CreateQuadList(numPatches, numPatches, this);
+}
+
+void BaseTerrain::UpdateTerrain(NoiseSettings settings, int WorldSize)
+{
+    m_terrainSize = WorldSize;
+    UpdateTerrain(settings);
+}
+
+void BaseTerrain::UpdateTerrain(NoiseSettings settings)
+{
+    m_heightMapTexture.BindImage(HEIGHT_MAP_TEXTURE_UNIT, GL_READ_ONLY);
+    m_heightMapGen.GenerateHeightMap(m_terrainSize, m_terrainSize, settings);
+    m_maxHeight = settings.maxHeight;
+    m_minHeight = settings.minHeight;
 }
 
 

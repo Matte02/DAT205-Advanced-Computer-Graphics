@@ -7,6 +7,7 @@
 #include "terrain_technique.h"
 #include "texture.h"
 #include "quad_list.h"
+#include <generation_technique.h>
 
 class BaseTerrain
 {
@@ -17,14 +18,14 @@ public:
 
 	void Destroy();
 
-	void InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, const std::vector<std::string>& TextureFilenames, Array2D<float>* heightMap);
+	void InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, const std::vector<std::string>& TextureFilenames, NoiseSettings settings);
+
+	void UpdateTerrain(int numPatches, float WorldScale, float TextureScale);
 	// Should only be used if the heights of the height map has changed, not when changing size or scale.
-	void UpdateHeightMapHeights(Array2D<float>* heightMap);
+	void UpdateTerrain(NoiseSettings settings);
+	void UpdateTerrain(NoiseSettings settings, int WorldSize);
 
 	void Render(const mat4 viewMatrix, const mat4 projMatrix, const vec3& CameraPos, const vec3& lightDirection, const int viewMode);
-
-	// Returns 
-	float GetHeight(int x, int z) const { return m_heightMap->Get(x, z); }
 
 	float GetWorldScale() const { return m_worldScale; }
 
@@ -47,7 +48,6 @@ protected:
 	int m_terrainSize = 0;
 	int m_numPatches;
 	float m_worldScale = 1.0f;
-	Array2D<float>* m_heightMap;
 
 	float m_pTerrainHeghts[4] = { 0.1f, 0.3f, 0.6f, 0.9f };
 	float m_slope = 1;
@@ -61,6 +61,7 @@ protected:
 
 	Texture m_heightMapTexture;
 	TerrainTechnique m_technique;
+	GenerationTechnique m_heightMapGen;
 	QuadList m_quadList;
 };
 

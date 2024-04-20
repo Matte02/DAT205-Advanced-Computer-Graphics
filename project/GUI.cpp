@@ -1,6 +1,7 @@
 #include "procedural_world.h" // Include the header file for ProceduralWorld class
 #include <imgui.h> // Include ImGui library
 #include <perf.h>
+#include <glm/gtc/random.hpp>
 
 // Define named constants for key bindings
 enum KeyBindings {
@@ -122,11 +123,10 @@ void ProceduralWorld::GuiTexture()
 		ImGui::Indent();
 
 		ImGui::Text("View Mode:");
-		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 2))
+		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 5))
 
 			ImGui::Text("Texture Scale:");
-		if (ImGui::SliderFloat("##Texture Scale", &worldSettings.textureScale, 0.0f, 0.1f))
-			GenerateTerrain();
+		regenerateWorld |= ImGui::SliderFloat("##Texture Scale", &worldSettings.textureScale, 0.0f, 0.1f);
 		/*if (ImGui::CollapsingHeader("Height Thresholds")) {
 			ImGui::Indent();
 			ImGui::Text("Keep the height values in order. I.e 1 should be lower than 2.");
@@ -175,7 +175,7 @@ void ProceduralWorld::GuiErosion() {
 
 		ImGui::Text("Droplet Innertia:");
 		ImGui::SliderFloat("##Droplet Innertia", &erosion.inertia, 0, 1);
-		
+
 		ImGui::Text("Droplet Sediment Capacity Factor:");
 		ImGui::SliderFloat("##Droplet Sediment Capacity Factor", &erosion.sedimentCapacityFactor, 1, 20);
 
@@ -202,10 +202,6 @@ void ProceduralWorld::GuiErosion() {
 
 		ImGui::Text("Iterations:");
 		ImGui::SliderInt("##Erosion Iterations", &erosionIteration, 1, 10000);
-		if (ImGui::Button("Erode Terrain")) {
-			ErodeHeightMap();
-		}
-
 		ImGui::Unindent();
 	}
 }
@@ -249,49 +245,49 @@ void ProceduralWorld::GuiNoiseSettings()
 	if (ImGui::CollapsingHeader("Noise Settings")) {
 		ImGui::Indent();
 
-		NoiseSettings& noiseSettings = heightMapGenerator.getNoiseSettings();
-		ImGui::Text("Noise Type:");
-		const char* items[] = { "DEFAULT", "FBM", "TURBULENCE", "RIDGE" };
-		int currentItem = noiseSettings.noiseType;
-		if (ImGui::Combo("##NoiseType", &currentItem, items, IM_ARRAYSIZE(items))) {
-			noiseSettings.noiseType = static_cast<Noise>(currentItem);
-			updateHeightMap = true;
-		}
 
+		ImGui::Text("Seed:");
+		regenerateWorld |= ImGui::SliderInt("##Min Height", &noiseSettings.seed, -1, 100000);
+		ImGui::Text("Min Height:");
+		regenerateWorld |= ImGui::SliderFloat("##Min Height", &noiseSettings.minHeight, -100.0f, 100.0f);
+		ImGui::Text("Max Height:");
+		regenerateWorld |= ImGui::SliderFloat("##Max Height", &noiseSettings.maxHeight, -100.0f, 10.0f);
 		ImGui::Text("Lacunarity:");
-		updateHeightMap |= ImGui::SliderFloat("##Lacunarity", &noiseSettings.lacunarity, 0.0f, 10.0f);
+		regenerateWorld |= ImGui::SliderFloat("##Lacunarity", &noiseSettings.lacunarity, 0.1f, 10.0f);
 
-		ImGui::Text("Gain:");
-		updateHeightMap |= ImGui::SliderFloat("##Gain", &noiseSettings.gain, 0.0f, 2.0f);
+		ImGui::Text("Persistence:");
+		regenerateWorld |= ImGui::SliderFloat("##Persistence", &noiseSettings.persistence, 0.01f, 1.0f);
 
 		ImGui::Text("Octaves:");
-		updateHeightMap |= ImGui::SliderInt("##Octaves", &noiseSettings.octaves, 0, 8);
+		regenerateWorld |= ImGui::SliderInt("##Octaves", &noiseSettings.octaves, 1, 16);
 
-		ImGui::Text("Sample Scale:");
-		updateHeightMap |= ImGui::SliderFloat("##SampleScale", &noiseSettings.sampleScale, 0.0f, 0.01f);
+		ImGui::Text("Noise Scale:");
+		regenerateWorld |= ImGui::SliderFloat("##Noise Scale", &noiseSettings.noiseScale, 0.01f, 200.0f);
 
-		ImGui::Text("Min Height:");
-		updateHeightMap |= ImGui::SliderFloat("##MinHeight", &noiseSettings.minHeight, 0.0f, 1000.0f);
+		ImGui::Text("Redistribution:");
+		regenerateWorld |= ImGui::SliderFloat("##Redistribution", &noiseSettings.exponent, 0.01f, 2.0f);
 
-		ImGui::Text("Max Height:");
-		updateHeightMap |= ImGui::SliderFloat("##MaxHeight", &noiseSettings.maxHeight, 0.0f, 1000.0f);
+		if (ImGui::CollapsingHeader("Offsets")) {
+			ImGui::Indent();
+			// Display sliders for each component of offsets
+			for (int i = 0; i < 16; ++i) {
+				regenerateWorld |= ImGui::SliderFloat2(("Offset " + std::to_string(i)).c_str(), &noiseSettings.offsets[i].x, 0, 1000);
+			}
+			ImGui::Unindent();
+		}
 
-		ImGui::Text("Ridge Offset:");
-		updateHeightMap |= ImGui::SliderFloat("##RidgeOffset", &noiseSettings.ridgeOffset, 0.0f, 10.0f);
 
-		ImGui::Text("Sample Offset:");
-		// Adjusting the layout for X, Y, Z components of sampleOffset vector
-		ImGui::Text("X:"); ImGui::SameLine();
-		ImGui::SetNextItemWidth(50); // Set the width of the input box
-		updateHeightMap |= ImGui::InputFloat("##SampleOffsetX", &noiseSettings.sampleOffset.x);
-		ImGui::SameLine(); // Adjust this value to your preference
-		ImGui::Text("Y:"); ImGui::SameLine();
-		ImGui::SetNextItemWidth(50); // Set the width of the input box
-		updateHeightMap |= ImGui::InputFloat("##SampleOffsetY", &noiseSettings.sampleOffset.y);
-		ImGui::SameLine(); // Adjust this value to your preference
-		ImGui::Text("Z:"); ImGui::SameLine();
-		ImGui::SetNextItemWidth(50); // Set the width of the input box
-		updateHeightMap |= ImGui::InputFloat("##SampleOffsetZ", &noiseSettings.sampleOffset.z);
+		// Button to generate random offsets
+		if (ImGui::Button("Randomize Seed")) {
+			noiseSettings.RandomizeSeed();
+			regenerateWorld = true;
+		}
+		// Button to generate random offsets
+		if (ImGui::Button("Generate Random Offsets")) {
+			noiseSettings.generateRandomOffsets();
+			regenerateWorld = true;
+		}
+
 
 		ImGui::Unindent();
 	}
@@ -310,7 +306,7 @@ void ProceduralWorld::RenderGuiOverlay()
 	GuiTexture();
 
 	GuiTerrain();
-	GuiErosion();
+	//GuiErosion();
 
 	////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////

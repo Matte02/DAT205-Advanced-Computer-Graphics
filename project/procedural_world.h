@@ -1,10 +1,10 @@
 #pragma once
-#include "scene/height_map_generator.h"
 #include "scene/terrain.h"
 #include <chrono>
 #include <labhelper.h>
 #include "scene/camera.h"
 #include <erosion.h>
+#include "scene/NoiseSettings.h"
 
 class ProceduralWorld {
 public:
@@ -53,7 +53,6 @@ private:
 	void RegenerateTerrain();
 	void GenerateTerrain();
 	void UpdateHeightMap();
-	void ErodeHeightMap();
 
 
 	bool stopRunning = false;
@@ -139,15 +138,16 @@ private:
 	// TODO: LOOK OVER
 	SlopeSettings slopeSettings;
 	WorldSettings worldSettings;
+	NoiseSettings noiseSettings;
 
 	bool autoUpdate = false;
 	bool updateHeightMap = false;
 	bool regenerateWorld = false;
 
 	BaseTerrain m_terrain;
-	HeightMapGenerator heightMapGenerator;
 	Erosion erosion;
 	float maxChangeThreshold = 1;
 	int erosionIteration = 1;
-	Array2D<float> heightMap;
+
+
 };

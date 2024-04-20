@@ -101,7 +101,7 @@ void TriangleList::PopulateBuffers(const BaseTerrain* pTerrain)
 
 void TriangleList::Vertex::InitVertex(const BaseTerrain* pTerrain, int x, int z)
 {
-	float y = pTerrain->GetHeight(x, z);
+	float y = 0;// pTerrain->GetHeight(x, z);
 
 	float WorldScale = pTerrain->GetWorldScale();
 

@@ -1,4 +1,4 @@
-#version 460 core
+#version 420
 precision highp float;
 
 layout (quads, fractional_odd_spacing, ccw) in;
@@ -8,6 +8,7 @@ in vec2 Tex2[];
 out vec2 Tex3;
 out float Height;
 
+uniform float u_maxHeight;
 uniform sampler2D u_heightMap;
 uniform mat4 u_viewProjectionMatrix;
 
@@ -41,7 +42,7 @@ void main()
     vec4 p = mix(p0, p1, v);
 
     // Add sampled height to the position
-    p.y += Height;
+    p.y += Height * u_maxHeight;
 
     // Transform from world to clip space
     gl_Position = u_viewProjectionMatrix * p;

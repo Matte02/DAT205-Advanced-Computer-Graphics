@@ -10,7 +10,7 @@ enum Noise {
 	RIDGE
 };
 
-struct NoiseSettings {
+struct NoiseSettings123 {
 	Noise noiseType = FBM;
 	float lacunarity = 2.0f;
 	float gain = 0.5f;
@@ -22,7 +22,7 @@ struct NoiseSettings {
 	vec3 sampleOffset{ 0 };
 	ivec3 wrap{ 0 };
 
-	NoiseSettings() = default;
+	NoiseSettings123() = default;
 };
 
 
@@ -37,11 +37,11 @@ public:
 
 
 	// Getter for NoiseSettings
-	NoiseSettings& getNoiseSettings() {
+	NoiseSettings123& getNoiseSettings() {
 		return settings;
 	}
 
 private:
-	NoiseSettings settings;
+	NoiseSettings123 settings;
 
 };
