@@ -4,6 +4,7 @@
 
 #include "technique.h"
 #include <fstream>
+#include "shading_include.h"
 
 #define INVALID_UNIFORM_LOCATION 0xffffffff
 
@@ -46,11 +47,7 @@ bool Technique::Init()
 // Use this method to add shaders to the program. When finished - call finalize()
 bool Technique::AddShader(GLenum ShaderType, const char* pFilename)
 {
-    std::string s;
-
-    if (!ReadFile(pFilename, s)) {
-        return false;
-    }
+    std::string s = Shadinclude::load(pFilename);
 
     GLuint ShaderObj = glCreateShader(ShaderType);
 
