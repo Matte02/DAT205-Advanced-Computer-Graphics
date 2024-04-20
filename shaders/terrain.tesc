@@ -1,4 +1,4 @@
-#version 420
+#version 460 core
 precision highp float;
 layout (vertices = 4) out;
 

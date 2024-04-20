@@ -8,6 +8,8 @@ file(GLOB_RECURSE SHADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.frag"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.tesc"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.tese"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.glsl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.comp"
 )
 
 # Add the shaders to a custom target (OPTIONAL)

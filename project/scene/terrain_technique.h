@@ -39,7 +39,7 @@ private:
 
     // Min Distance (Most amount of detail)
     GLuint m_minDistanceLoc = -1;
-    float m_minDistance = 5;
+    float m_minDistance = 128;
 
     // Max Tessellation Level
     GLuint m_maxTessLevelLoc = -1;
