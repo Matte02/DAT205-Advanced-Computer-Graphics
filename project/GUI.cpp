@@ -126,7 +126,7 @@ void ProceduralWorld::GuiTexture()
 		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 5))
 
 			ImGui::Text("Texture Scale:");
-		regenerateWorld |= ImGui::SliderFloat("##Texture Scale", &worldSettings.textureScale, 0.0f, 0.1f);
+		regenerateWorld |= ImGui::SliderFloat("##Texture Scale", &worldSettings.textureScale, 0.1f, 4.0f);
 		/*if (ImGui::CollapsingHeader("Height Thresholds")) {
 			ImGui::Indent();
 			ImGui::Text("Keep the height values in order. I.e 1 should be lower than 2.");
@@ -213,15 +213,15 @@ void ProceduralWorld::GuiTerrain()
 
 		// World Scale
 		ImGui::Text("World Scale:");
-		regenerateWorld |= ImGui::SliderFloat("##World Scale", &worldSettings.worldScale, 0.0, 20.0);
+		regenerateWorld |= ImGui::SliderFloat("##World Scale", &worldSettings.worldScale, 1.0, 128.0);
 
 		// World Size
 		ImGui::Text("World Size:");
-		regenerateWorld |= ImGui::SliderInt("##World Size", &worldSettings.worldSize, 1, 2048);
+		regenerateWorld |= ImGui::SliderInt("##World Size", &worldSettings.worldSize, 512, 4096);
 
 		// World Size
 		ImGui::Text("Patch Size:");
-		regenerateWorld |= ImGui::SliderInt("##Patch Size", &worldSettings.patchSize, 2, 7);
+		regenerateWorld |= ImGui::SliderInt("##Patch Size", &worldSettings.patchSize, 4, 64);
 
 		GuiNoiseSettings();
 
@@ -247,13 +247,13 @@ void ProceduralWorld::GuiNoiseSettings()
 
 
 		ImGui::Text("Seed:");
-		regenerateWorld |= ImGui::SliderInt("##Min Height", &noiseSettings.seed, -1, 100000);
+		regenerateWorld |= ImGui::SliderInt("##Seed", &noiseSettings.seed, -1, 100000);
 		ImGui::Text("Min Height:");
 		regenerateWorld |= ImGui::SliderFloat("##Min Height", &noiseSettings.minHeight, -100.0f, 100.0f);
 		ImGui::Text("Max Height:");
-		regenerateWorld |= ImGui::SliderFloat("##Max Height", &noiseSettings.maxHeight, -100.0f, 10.0f);
+		regenerateWorld |= ImGui::SliderFloat("##Max Height", &noiseSettings.maxHeight, 1, 250.0f);
 		ImGui::Text("Lacunarity:");
-		regenerateWorld |= ImGui::SliderFloat("##Lacunarity", &noiseSettings.lacunarity, 0.1f, 10.0f);
+		regenerateWorld |= ImGui::SliderFloat("##Lacunarity", &noiseSettings.lacunarity, 0.1f, 2.0f);
 
 		ImGui::Text("Persistence:");
 		regenerateWorld |= ImGui::SliderFloat("##Persistence", &noiseSettings.persistence, 0.01f, 1.0f);
@@ -262,7 +262,7 @@ void ProceduralWorld::GuiNoiseSettings()
 		regenerateWorld |= ImGui::SliderInt("##Octaves", &noiseSettings.octaves, 1, 16);
 
 		ImGui::Text("Noise Scale:");
-		regenerateWorld |= ImGui::SliderFloat("##Noise Scale", &noiseSettings.noiseScale, 0.01f, 200.0f);
+		regenerateWorld |= ImGui::SliderFloat("##Noise Scale", &noiseSettings.noiseScale, 0.01f, 10.0f);
 
 		ImGui::Text("Redistribution:");
 		regenerateWorld |= ImGui::SliderFloat("##Redistribution", &noiseSettings.exponent, 0.01f, 2.0f);
@@ -271,7 +271,7 @@ void ProceduralWorld::GuiNoiseSettings()
 			ImGui::Indent();
 			// Display sliders for each component of offsets
 			for (int i = 0; i < 16; ++i) {
-				regenerateWorld |= ImGui::SliderFloat2(("Offset " + std::to_string(i)).c_str(), &noiseSettings.offsets[i].x, 0, 1000);
+				regenerateWorld |= ImGui::SliderFloat2(("Offset " + std::to_string(i)).c_str(), &noiseSettings.offsets[i].x, -100000, 100000);
 			}
 			ImGui::Unindent();
 		}

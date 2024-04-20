@@ -194,7 +194,7 @@ void ProceduralWorld::UpdateHeightMap()
 #if TIMING_ENABLED
 	auto start = std::chrono::high_resolution_clock::now();
 #endif
-	m_terrain.UpdateTerrain(noiseSettings);
+	m_terrain.UpdateTerrain(noiseSettings, worldSettings.worldSize);
 
 
 #if TIMING_ENABLED

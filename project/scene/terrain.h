@@ -8,11 +8,12 @@
 #include "texture.h"
 #include "quad_list.h"
 #include <generation_technique.h>
+#include <normal_map_technique.h>
 
 class BaseTerrain
 {
 public:
-	BaseTerrain() : m_heightMapTexture(GL_TEXTURE_2D) {}
+	BaseTerrain() : m_heightMapTexture(GL_TEXTURE_2D), m_normalMapTexture(GL_TEXTURE_2D) {}
 
 	~BaseTerrain();
 
@@ -22,7 +23,6 @@ public:
 
 	void UpdateTerrain(int numPatches, float WorldScale, float TextureScale);
 	// Should only be used if the heights of the height map has changed, not when changing size or scale.
-	void UpdateTerrain(NoiseSettings settings);
 	void UpdateTerrain(NoiseSettings settings, int WorldSize);
 
 	void Render(const mat4 viewMatrix, const mat4 projMatrix, const vec3& CameraPos, const vec3& lightDirection, const int viewMode);
@@ -60,8 +60,12 @@ protected:
 	float m_textureScale = 1.0f;
 
 	Texture m_heightMapTexture;
-	TerrainTechnique m_technique;
+	Texture m_normalMapTexture;
+
 	GenerationTechnique m_heightMapGen;
+	NormalMapTechnique m_normalMapGen;
+
+	TerrainTechnique m_technique;
 	QuadList m_quadList;
 };
 

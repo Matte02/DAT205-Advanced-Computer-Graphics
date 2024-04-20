@@ -2,8 +2,8 @@
 
 layout (local_size_x = 32, local_size_y = 32) in;
 
-layout (binding=0, r32f) uniform image2D u_heightmap;
-layout (binding=1, r32f) uniform image2D u_normalmap;
+layout (binding=4, r32f) uniform image2D u_heightmap;
+layout (binding=5, rgba32f) uniform image2D u_normalmap;
 
 shared float local_neighborhood[gl_WorkGroupSize.x+2][gl_WorkGroupSize.y+2];
 

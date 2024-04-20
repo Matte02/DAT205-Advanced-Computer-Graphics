@@ -21,6 +21,10 @@ void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScal
         printf("Error initializing generation tech\n");
         exit(0);
     }
+    if (!m_normalMapGen.Init()) {
+        printf("Error initializing normalmap tech\n");
+        exit(0);
+    }
 
     m_numPatches = numPatches;
     m_worldScale = WorldScale;
@@ -34,10 +38,14 @@ void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScal
 
 
     m_quadList.CreateQuadList(numPatches, numPatches, this);
-    m_heightMapTexture.CreateEmpty32FTexture(m_terrainSize , m_terrainSize);
+    m_heightMapTexture.CreateEmpty32FTexture(m_terrainSize , m_terrainSize, GL_R32F);
+    m_normalMapTexture.CreateEmpty32FTexture(m_terrainSize, m_terrainSize, GL_RGBA32F);
 
     m_heightMapTexture.BindImage(HEIGHT_MAP_TEXTURE_UNIT, GL_READ_ONLY);
     m_heightMapGen.GenerateHeightMap(m_terrainSize, m_terrainSize, settings);
+
+    m_normalMapTexture.BindImage(NORMAL_MAP_TEXTURE_UNIT, GL_READ_ONLY);
+    m_normalMapGen.GenerateNormalMap(m_terrainSize, m_terrainSize);
     m_maxHeight = settings.maxHeight;
     m_minHeight = settings.minHeight;
 }
@@ -58,13 +66,11 @@ void BaseTerrain::UpdateTerrain(int numPatches, float WorldScale, float TextureS
 void BaseTerrain::UpdateTerrain(NoiseSettings settings, int WorldSize)
 {
     m_terrainSize = WorldSize;
-    UpdateTerrain(settings);
-}
-
-void BaseTerrain::UpdateTerrain(NoiseSettings settings)
-{
     m_heightMapTexture.BindImage(HEIGHT_MAP_TEXTURE_UNIT, GL_READ_ONLY);
     m_heightMapGen.GenerateHeightMap(m_terrainSize, m_terrainSize, settings);
+
+    m_normalMapTexture.BindImage(NORMAL_MAP_TEXTURE_UNIT, GL_READ_ONLY);
+    m_normalMapGen.GenerateNormalMap(m_terrainSize, m_terrainSize);
     m_maxHeight = settings.maxHeight;
     m_minHeight = settings.minHeight;
 }
@@ -130,6 +136,7 @@ void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projectionMatrix, con
     //m_technique.SetLightDir(lightDirection);
 
     m_heightMapTexture.Bind(HEIGHT_MAP_TEXTURE_UNIT);
+    m_normalMapTexture.Bind(NORMAL_MAP_TEXTURE_UNIT);
 
     m_quadList.Render();
 }

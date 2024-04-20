@@ -48,6 +48,7 @@ bool TerrainTechnique::Init()
 	m_ViewProjectionLoc = GetUniformLocation("u_viewProjectionMatrix");
 	m_ViewLoc = GetUniformLocation("u_viewMatrix");
 	m_heightMapLoc = GetUniformLocation("u_heightMap");
+	m_normalMapLoc = GetUniformLocation("u_normalMap");
 	m_maxHeightLoc = GetUniformLocation("u_maxHeight");
 	m_maxDistanceLoc = GetUniformLocation("u_maxDistance");
 	m_minDistanceLoc = GetUniformLocation("u_minDistance");
@@ -59,6 +60,7 @@ bool TerrainTechnique::Init()
 		m_ViewProjectionLoc == INVALID_UNIFORM_LOCATION ||
 		m_ViewLoc			== INVALID_UNIFORM_LOCATION ||
 		m_heightMapLoc		== INVALID_UNIFORM_LOCATION ||
+		m_normalMapLoc		== INVALID_UNIFORM_LOCATION ||
 		m_maxHeightLoc		== INVALID_UNIFORM_LOCATION ||
 		m_maxDistanceLoc	== INVALID_UNIFORM_LOCATION ||
 		m_minDistanceLoc	== INVALID_UNIFORM_LOCATION ||
@@ -71,6 +73,7 @@ bool TerrainTechnique::Init()
 	Enable();
 
 	glUniform1i(m_heightMapLoc, HEIGHT_MAP_TEXTURE_UNIT_INDEX);
+	glUniform1i(m_normalMapLoc, NORMAL_MAP_TEXTURE_UNIT_INDEX);
 
 	glUseProgram(0);
 

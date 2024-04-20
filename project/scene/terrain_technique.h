@@ -31,6 +31,7 @@ private:
 
     GLuint m_reversedLightDirLoc = -1;
     GLuint m_heightMapLoc = -1;
+    GLuint m_normalMapLoc = -1;
     GLuint m_maxHeightLoc = -1;
 
     // Max Distance (Least amount of detail)

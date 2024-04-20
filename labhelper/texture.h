@@ -25,7 +25,7 @@ public:
 
     void LoadF32(int Width, int Height, const float* pImageData);
 
-    void CreateEmpty32FTexture(int width, int height);
+    void CreateEmpty32FTexture(int width, int height, GLenum format);
 
     // Must be called at least once for the specific texture unit
     void Bind(GLenum TextureUnit);
@@ -47,7 +47,7 @@ private:
 
     std::string m_fileName;
     GLenum m_textureTarget;
-    GLenum format;
+    GLenum m_format;
     GLuint m_textureObj;
     int m_imageWidth = 0;
     int m_imageHeight = 0;
