@@ -135,6 +135,24 @@ void Texture::LoadF32(int Width, int Height, const float* pImageData)
 	glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
+void Texture::CreateEmpty32FTexture(int width, int height) {
+	m_imageWidth = width;
+	m_imageHeight = height;
+	m_imageBPP = 1; // Assuming RGBA format
+
+	glCreateTextures(m_textureTarget, 1, &m_textureObj);
+	glTextureStorage2D(m_textureObj, 1, GL_R32F, m_imageWidth, m_imageHeight); // Using GL_R32F format
+	// You can change GL_R32F to GL_RGBA8 if you need RGBA format
+	// glTextureStorage2D(m_textureObj, 1, GL_RGBA8, m_imageWidth, m_imageHeight);
+
+	// Set texture parameters
+	glTextureParameteri(m_textureObj, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteri(m_textureObj, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTextureParameterf(m_textureObj, GL_TEXTURE_BASE_LEVEL, 0);
+	glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
 
 void Texture::Bind(GLenum TextureUnit)
 {

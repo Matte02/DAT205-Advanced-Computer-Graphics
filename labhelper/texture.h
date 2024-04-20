@@ -23,6 +23,8 @@ public:
 
     void LoadF32(int Width, int Height, const float* pImageData);
 
+    void CreateEmpty32FTexture(int width, int height);
+
     // Must be called at least once for the specific texture unit
     void Bind(GLenum TextureUnit);
 
