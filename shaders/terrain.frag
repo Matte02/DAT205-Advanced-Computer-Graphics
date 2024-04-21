@@ -4,6 +4,8 @@
 precision highp float;
 layout(location = 0) out vec4 fragmentColor;
 
+layout (binding=3) uniform sampler2DArray u_terrainTextures;
+
 #include incl_noise.glsl
 
 in vec2 Tex3;
@@ -15,11 +17,16 @@ uniform sampler2D u_normalMap;
 
 void main()
 {
+	vec2 scaledTexCoord = Tex3 * 2; // TODO Add scale as uniform
 	if (u_viewMode == 1) {
-		fragmentColor = vec4(Tex3.x, Tex3.y, 0.0f, 1.0f);
+		fragmentColor = vec4(Tex3, 0.0f, 1.0f);
 	} else if (u_viewMode == 2) {
-		vec3 normal = texture(u_normalMap, Tex3).xyz;
+		vec3 normal = texture(u_normalMap, scaledTexCoord).xyz;
 		fragmentColor = vec4(normal, 1.0f);
+	} else if (u_viewMode >= 3 && u_viewMode < 9) {
+		int index = u_viewMode - 3;
+		vec4 color = texture(u_terrainTextures,vec3(scaledTexCoord, index));
+		fragmentColor = color;
 	} else {
 		fragmentColor= vec4(vec3(Height), 1.0f);
 	}

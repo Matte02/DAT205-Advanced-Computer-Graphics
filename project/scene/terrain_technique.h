@@ -25,6 +25,7 @@ public:
     void SetViewMode(const int viewMode);
 private:
     GLuint m_viewModeLoc = -1;
+    GLuint m_terrainTexturesLoc = -1;
 
     GLuint m_ViewProjectionLoc = -1;
     GLuint m_ViewLoc = -1;

@@ -123,7 +123,7 @@ void ProceduralWorld::GuiTexture()
 		ImGui::Indent();
 
 		ImGui::Text("View Mode:");
-		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 5))
+		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 10))
 
 			ImGui::Text("Texture Scale:");
 		regenerateWorld |= ImGui::SliderFloat("##Texture Scale", &worldSettings.textureScale, 0.1f, 4.0f);

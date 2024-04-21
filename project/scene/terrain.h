@@ -13,7 +13,7 @@
 class BaseTerrain
 {
 public:
-	BaseTerrain() : m_heightMapTexture(GL_TEXTURE_2D), m_normalMapTexture(GL_TEXTURE_2D) {}
+	BaseTerrain();
 
 	~BaseTerrain();
 
@@ -41,7 +41,7 @@ public:
 
 
 protected:
-	void BaseTerrain::InitTextures(const std::vector<std::string>& TextureFilenames, labhelper::Texture TextureArray[]);
+	void BaseTerrain::InitTextures();
 
 	float m_maxHeight = 0;
 	float m_minHeight = 0;
@@ -56,11 +56,13 @@ protected:
 	labhelper::Texture m_pTextureNormals[6] = { 0 };
 
 	
+	int m_numTextures = 6;
+	Texture m_terrainTextures = Texture(GL_TEXTURE_2D_ARRAY);
 
 	float m_textureScale = 1.0f;
 
-	Texture m_heightMapTexture;
-	Texture m_normalMapTexture;
+	Texture m_heightMapTexture = Texture(GL_TEXTURE_2D);
+	Texture m_normalMapTexture = Texture(GL_TEXTURE_2D);
 
 	GenerationTechnique m_heightMapGen;
 	NormalMapTechnique m_normalMapGen;

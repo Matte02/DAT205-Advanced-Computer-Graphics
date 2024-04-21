@@ -209,7 +209,6 @@ void ProceduralWorld::UpdateHeightMap()
 void ProceduralWorld::CreateShaderPrograms()
 {
 	CreateEnvoirmentShaders();
-	//CreateTerrainShaders();
 
 }
 
@@ -221,9 +220,6 @@ void ProceduralWorld::CreateEnvoirmentShaders()
 
 void ProceduralWorld::CreateTerrainShaders()
 {
-	TerrainShaders.emplace_back(CreateShaderProgram("simple", "simple"));
-	TerrainShaders.emplace_back(CreateShaderProgram("single_tex", "single_tex"));
-	TerrainShaders.emplace_back(CreateShaderProgram("simple_with_norm", "single_tex"));
 }
 
 
