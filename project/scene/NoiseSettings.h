@@ -23,6 +23,7 @@ struct NoiseSettings {
 
 	void RandomizeSeed() {
 		seed = static_cast<int>(std::time(nullptr)); // Use current time as seed
+		seed = rand();
 		srand(seed);
 	}
 

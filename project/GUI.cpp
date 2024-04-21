@@ -123,85 +123,17 @@ void ProceduralWorld::GuiTexture()
 		ImGui::Indent();
 
 		ImGui::Text("View Mode:");
-		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 10))
+		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 10)) {
+			terrainTechnique.SetViewMode(viewMode);
+		}
 
 			ImGui::Text("Texture Scale:");
 		regenerateWorld |= ImGui::SliderFloat("##Texture Scale", &worldSettings.textureScale, 0.1f, 4.0f);
-		/*if (ImGui::CollapsingHeader("Height Thresholds")) {
-			ImGui::Indent();
-			ImGui::Text("Keep the height values in order. I.e 1 should be lower than 2.");
-			ImGui::Text("Height 1:");
-			if (ImGui::SliderFloat("##Height 1", &heightThresholds[0], 0.0, 1)) {
-				m_terrain.setTerrainHeights(heightThresholds);
-				GenerateTerrain();
-			}
-			ImGui::Text("Height 2:");
-			if (ImGui::SliderFloat("##Height 2", &heightThresholds[1], 0.0, 1)) {
-				m_terrain.setTerrainHeights(heightThresholds);
-				generateTerrain();
-			}
-			ImGui::Text("Height 3:");
-			if (ImGui::SliderFloat("##Height 3", &heightThresholds[2], 0.0, 1)) {
-				m_terrain.setTerrainHeights(heightThresholds);
-				generateTerrain();
-			}
-			ImGui::Text("Height 4:");
-			if (ImGui::SliderFloat("##Height 4", &heightThresholds[3], 0.0, 1)) {
-				m_terrain.setTerrainHeights(heightThresholds);
-				generateTerrain();
-			}
-			ImGui::Unindent();
-		}*/
-		ImGui::Text("Slope");
-		if (ImGui::SliderFloat("##Slope", &slopeSettings.slope, 0.0f, 90.0f)) {
-			GenerateTerrain();
+
+		ImGui::Text("Color Texture Scale:");
+		if (ImGui::SliderFloat("##Color Texture Scale", &colorTextureScale, 1.0f, 256.0f)) {
+			terrainTechnique.SetTextureScale(colorTextureScale);
 		}
-		ImGui::Text("Slope Range");
-		if (ImGui::SliderFloat("##Slope Range", &slopeSettings.slopeRange, 0.0f, 90.0f)) {
-			GenerateTerrain();
-		}
-		ImGui::Unindent();
-	}
-}
-
-void ProceduralWorld::GuiErosion() {
-	if (ImGui::CollapsingHeader("Erosion")) {
-		ImGui::Indent();
-
-		ImGui::Text("Change Threshold:");
-		ImGui::SliderFloat("##Change Threshold", &maxChangeThreshold, 0, 10);
-		ImGui::Text("Erosion Radius:");
-		ImGui::SliderInt("##Erosion Radius", &erosion.erosionRadius, 2, 8);
-
-		ImGui::Text("Droplet Innertia:");
-		ImGui::SliderFloat("##Droplet Innertia", &erosion.inertia, 0, 1);
-
-		ImGui::Text("Droplet Sediment Capacity Factor:");
-		ImGui::SliderFloat("##Droplet Sediment Capacity Factor", &erosion.sedimentCapacityFactor, 1, 20);
-
-		ImGui::Text("Droplet Minimum Sediment Capacity:");
-		ImGui::SliderFloat("##Droplet Minimum Sediment Capacity", &erosion.minSedimentCapacity, 0, 1);
-
-		ImGui::Text("Erode Speed:");
-		ImGui::SliderFloat("##Erode Speed", &erosion.erodeSpeed, 0, 1);
-
-		ImGui::Text("Deposit Speed:");
-		ImGui::SliderFloat("##Deposit Speed", &erosion.depositSpeed, 0, 1);
-
-		ImGui::Text("Gravity:");
-		ImGui::SliderFloat("##Gravity Gravity", &erosion.gravity, 0, 10);
-
-		ImGui::Text("Evaporation Speed:");
-		ImGui::SliderFloat("##Evaporation Evaporation", &erosion.evaporateSpeed, 0, 1);
-
-		ImGui::Text("Water Size:");
-		ImGui::SliderFloat("##Water Size", &erosion.initialWaterVolume, 1, 10000);
-
-		ImGui::Text("Max Droplet Life:");
-		ImGui::SliderInt("##Max Droplet Life", &erosion.maxDropletLifetime, 15, 45);
-
-		ImGui::Text("Iterations:");
-		ImGui::SliderInt("##Erosion Iterations", &erosionIteration, 1, 10000);
 		ImGui::Unindent();
 	}
 }
@@ -222,6 +154,16 @@ void ProceduralWorld::GuiTerrain()
 		// World Size
 		ImGui::Text("Patch Size:");
 		regenerateWorld |= ImGui::SliderInt("##Patch Size", &worldSettings.patchSize, 4, 64);
+
+		ImGui::Text("Max Height:");
+		if (ImGui::SliderFloat("##Max Height", &noiseSettings.maxHeight, 1, 250.0f)) {
+			terrainTechnique.SetMaxHeight(noiseSettings.maxHeight);
+		}
+
+		ImGui::Text("Offset Height:");
+		if (ImGui::SliderFloat("##Offset Height", &offSetHeight, -50.0f, 50.0f)) {
+			terrainTechnique.SetOffSetHeight(offSetHeight);
+		}
 
 		GuiNoiseSettings();
 
@@ -247,11 +189,7 @@ void ProceduralWorld::GuiNoiseSettings()
 
 
 		ImGui::Text("Seed:");
-		regenerateWorld |= ImGui::SliderInt("##Seed", &noiseSettings.seed, -1, 100000);
-		ImGui::Text("Min Height:");
-		regenerateWorld |= ImGui::SliderFloat("##Min Height", &noiseSettings.minHeight, -100.0f, 100.0f);
-		ImGui::Text("Max Height:");
-		regenerateWorld |= ImGui::SliderFloat("##Max Height", &noiseSettings.maxHeight, 1, 250.0f);
+		ImGui::SliderInt("##Seed", &noiseSettings.seed, -1, 100000);
 		ImGui::Text("Lacunarity:");
 		regenerateWorld |= ImGui::SliderFloat("##Lacunarity", &noiseSettings.lacunarity, 0.1f, 2.0f);
 
@@ -278,12 +216,13 @@ void ProceduralWorld::GuiNoiseSettings()
 
 
 		// Button to generate random offsets
-		if (ImGui::Button("Randomize Seed")) {
+		if (ImGui::Button("Generate Random offset with new random seed")) {
 			noiseSettings.RandomizeSeed();
+			noiseSettings.generateRandomOffsets();
 			regenerateWorld = true;
 		}
 		// Button to generate random offsets
-		if (ImGui::Button("Generate Random Offsets")) {
+		if (ImGui::Button("Generate Random Offsets with current seed")) {
 			noiseSettings.generateRandomOffsets();
 			regenerateWorld = true;
 		}

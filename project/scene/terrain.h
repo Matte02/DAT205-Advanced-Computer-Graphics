@@ -19,13 +19,13 @@ public:
 
 	void Destroy();
 
-	void InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, const std::vector<std::string>& TextureFilenames, NoiseSettings settings);
+	void InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, NoiseSettings settings, TerrainTechnique* terrainTechnique);
 
 	void UpdateTerrain(int numPatches, float WorldScale, float TextureScale);
 	// Should only be used if the heights of the height map has changed, not when changing size or scale.
 	void UpdateTerrain(NoiseSettings settings, int WorldSize);
 
-	void Render(const mat4 viewMatrix, const mat4 projMatrix, const vec3& CameraPos, const vec3& lightDirection, const int viewMode);
+	void Render(const mat4 viewMatrix, const mat4 projMatrix, const vec3& CameraPos, const vec3& lightDirection);
 
 	float GetWorldScale() const { return m_worldScale; }
 
@@ -67,7 +67,7 @@ protected:
 	GenerationTechnique m_heightMapGen;
 	NormalMapTechnique m_normalMapGen;
 
-	TerrainTechnique m_technique;
+	TerrainTechnique* m_technique;
 	QuadList m_quadList;
 };
 

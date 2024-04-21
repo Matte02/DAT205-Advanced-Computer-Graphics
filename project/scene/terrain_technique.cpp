@@ -48,10 +48,12 @@ bool TerrainTechnique::Init()
 	m_ViewProjectionLoc = GetUniformLocation("u_viewProjectionMatrix");
 	
 	m_terrainTexturesLoc = GetUniformLocation("u_terrainTextures");
+	m_textureScaleLoc = GetUniformLocation("u_textureScale");
 	m_ViewLoc = GetUniformLocation("u_viewMatrix");
 	m_heightMapLoc = GetUniformLocation("u_heightMap");
 	m_normalMapLoc = GetUniformLocation("u_normalMap");
 	m_maxHeightLoc = GetUniformLocation("u_maxHeight");
+	m_offSetHeightLoc = GetUniformLocation("u_offSetHeight");
 	m_maxDistanceLoc = GetUniformLocation("u_maxDistance");
 	m_minDistanceLoc = GetUniformLocation("u_minDistance");
 	m_maxTessLevelLoc = GetUniformLocation("u_maxTessLevel");
@@ -64,7 +66,9 @@ bool TerrainTechnique::Init()
 		m_heightMapLoc		== INVALID_UNIFORM_LOCATION ||
 		m_normalMapLoc		== INVALID_UNIFORM_LOCATION ||
 		m_terrainTexturesLoc == INVALID_UNIFORM_LOCATION ||
+		m_textureScaleLoc	== INVALID_UNIFORM_LOCATION ||
 		m_maxHeightLoc		== INVALID_UNIFORM_LOCATION ||
+		m_offSetHeightLoc	== INVALID_UNIFORM_LOCATION ||
 		m_maxDistanceLoc	== INVALID_UNIFORM_LOCATION ||
 		m_minDistanceLoc	== INVALID_UNIFORM_LOCATION ||
 		m_maxTessLevelLoc	== INVALID_UNIFORM_LOCATION ||
@@ -106,7 +110,17 @@ void TerrainTechnique::SetMaxHeight(const float maxHeight)
 	glUniform1f(m_maxHeightLoc, maxHeight);
 }
 
+void TerrainTechnique::SetOffSetHeight(const float offSetHeight)
+{
+	glUniform1f(m_offSetHeightLoc, offSetHeight);
+}
+
 void TerrainTechnique::SetViewMode(const int viewMode)
 {
 	glUniform1i(m_viewModeLoc, viewMode);
+}
+
+void TerrainTechnique::SetTextureScale(const float textureScale)
+{
+	glUniform1f(m_textureScaleLoc, textureScale);
 }

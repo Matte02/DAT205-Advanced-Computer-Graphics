@@ -144,7 +144,11 @@ private:
 	bool updateHeightMap = false;
 	bool regenerateWorld = false;
 
+	float offSetHeight = 0;
+	float colorTextureScale = 16;
+
 	BaseTerrain m_terrain;
+	TerrainTechnique terrainTechnique;
 	Erosion erosion;
 	float maxChangeThreshold = 1;
 	int erosionIteration = 1;

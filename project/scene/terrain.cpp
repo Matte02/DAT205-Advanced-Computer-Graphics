@@ -14,9 +14,11 @@
 BaseTerrain::BaseTerrain() {
 }
 
-void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, const std::vector<std::string>& TextureFilenames, NoiseSettings settings)
+void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, NoiseSettings settings, TerrainTechnique* terrainTechnique )
 {
-	if (!m_technique.Init()) {
+
+	m_technique = terrainTechnique;
+	if (!m_technique->Init()) {
 		printf("Error initializing tech\n");
 		exit(0);
 	}
@@ -130,15 +132,12 @@ void BaseTerrain::Destroy()
 
 }
 
-void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projectionMatrix, const vec3& CameraPos, const vec3& lightDirection, const int viewMode)
+void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projectionMatrix, const vec3& CameraPos, const vec3& lightDirection)
 {
 
-	m_technique.Enable();
-	m_technique.SetViewMatrix(viewMatrix);
-	m_technique.SetViewProjectionMatrix(projectionMatrix * viewMatrix);
-	m_technique.SetMaxHeight(m_maxHeight);
-	m_technique.SetViewMode(viewMode);
-	//m_technique.SetLightDir(lightDirection);
+	m_technique->Enable();
+	m_technique->SetViewMatrix(viewMatrix);
+	m_technique->SetViewProjectionMatrix(projectionMatrix * viewMatrix);
 
 	m_heightMapTexture.Bind(HEIGHT_MAP_TEXTURE_UNIT);
 	m_normalMapTexture.Bind(NORMAL_MAP_TEXTURE_UNIT);

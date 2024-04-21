@@ -35,7 +35,7 @@ ProceduralWorld::ProceduralWorld() : m_terrain() {
 	CreateShaderPrograms();
 
 	glEnable(GL_DEPTH_TEST); // enable Z-buffering
-	//glEnable(GL_CULL_FACE);  // enables backface culling
+	glEnable(GL_CULL_FACE);  // enables backface culling
 
 }
 
@@ -95,7 +95,6 @@ void ProceduralWorld::Render()
 	else {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
-	// TODO: MAYBE EXTRACT IN TO FUNCTION
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, windowWidth, windowHeight);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -105,7 +104,7 @@ void ProceduralWorld::Render()
 		labhelper::perf::Scope s("Background");
 		RenderBackground(projMatrix);
 	}
-	m_terrain.Render(camera.getViewMatrix(), projMatrix, camera.position, normalize(vec3(-lightPosition)), viewMode);
+	m_terrain.Render(camera.getViewMatrix(), projMatrix, camera.position, normalize(vec3(-lightPosition)));
 }
 
 void ProceduralWorld::RenderBackground(const mat4& projectionMatrix)
@@ -185,8 +184,14 @@ void ProceduralWorld::GenerateTerrain()
 		worldSettings.worldSize,
 		worldSettings.textureScale,
 		worldSettings.patchSize,
-		textFilenames,
-		noiseSettings);
+		noiseSettings, 
+		&terrainTechnique);
+	// Set up uniforms in Terrain Technique
+	terrainTechnique.Enable();
+	terrainTechnique.SetViewMode(viewMode);
+	terrainTechnique.SetMaxHeight(noiseSettings.maxHeight);
+	terrainTechnique.SetOffSetHeight(offSetHeight);
+	terrainTechnique.SetTextureScale(colorTextureScale);
 }
 
 void ProceduralWorld::UpdateHeightMap()

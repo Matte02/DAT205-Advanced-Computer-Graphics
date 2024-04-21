@@ -14,14 +14,14 @@ in float Height;
 uniform int u_viewMode;
 uniform sampler2D u_heightMap;
 uniform sampler2D u_normalMap;
-
+uniform float u_textureScale;
 void main()
 {
-	vec2 scaledTexCoord = Tex3 * 2; // TODO Add scale as uniform
+	vec2 scaledTexCoord = Tex3 * u_textureScale; // TODO Add scale as uniform
 	if (u_viewMode == 1) {
 		fragmentColor = vec4(Tex3, 0.0f, 1.0f);
 	} else if (u_viewMode == 2) {
-		vec3 normal = texture(u_normalMap, scaledTexCoord).xyz;
+		vec3 normal = texture(u_normalMap, Tex3).xyz;
 		fragmentColor = vec4(normal, 1.0f);
 	} else if (u_viewMode >= 3 && u_viewMode < 9) {
 		int index = u_viewMode - 3;
