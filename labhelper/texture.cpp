@@ -1,16 +1,9 @@
 #include <iostream>
-#include <math.h>
-#include "texture.h"
 #include <GL/glew.h>
 // STB_IMAGE for loading images of many filetypes
 #include <stb_image.h>
 #include <stb_image_write.h>"
-
-Texture::Texture(GLenum TextureTarget, const std::string& FileName)
-{
-	m_textureTarget = TextureTarget;
-	m_fileName = FileName;
-}
+#include "texture.h"
 
 
 Texture::Texture(GLenum TextureTarget)
@@ -27,154 +20,135 @@ Texture::~Texture()
 	}
 }
 
-
-void Texture::Load(unsigned int BufferSize, void* pData)
+void Texture::CreateEmptyTexture(int width, int height, GLenum format)
 {
-	void* pImageData = stbi_load_from_memory((const stbi_uc*)pData, BufferSize, &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
 
-	LoadInternal(pImageData);
+    m_width = width;
+    m_height = height;
+    m_format = format;
 
-	stbi_image_free(pImageData);
+    glCreateTextures(m_textureTarget, 1, &m_textureObj);
+    glTextureStorage2D(m_textureObj, 1, format, width, height);
+
+    glTextureParameteri(m_textureObj, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameterf(m_textureObj, GL_TEXTURE_BASE_LEVEL, 0);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
-bool Texture::Load()
+void Texture::Load(const std::string& filename, int colorComponents)
 {
-	stbi_set_flip_vertically_on_load(1);
+    stbi_set_flip_vertically_on_load(1);
 
-	unsigned char* pImageData = stbi_load(m_fileName.c_str(), &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
+    unsigned char* pImageData = stbi_load(filename.c_str(), &m_width, &m_height, &m_bpp, colorComponents);
 
-	if (!pImageData) {
-		printf("Can't load texture from '%s' - %s\n", m_fileName.c_str(), stbi_failure_reason());
-		exit(0);
-	}
+    if (!pImageData) {
+        printf("Can't load texture from '%s' - %s\n", filename.c_str(), stbi_failure_reason());
+        exit(0);
+    }
 
-	printf("Width %d, height %d, bpp %d\n", m_imageWidth, m_imageHeight, m_imageBPP);
+    printf("Width %d, height %d, bpp %d\n", m_width, m_height, m_bpp);
+    glCreateTextures(m_textureTarget, 1, &m_textureObj);
 
-	LoadInternal(pImageData);
+    int Levels = CalculateMipMapLevel();
 
-	return true;
+    if (m_textureTarget == GL_TEXTURE_2D) {
+        switch (m_bpp) {
+        case 1:
+            glTextureStorage2D(m_textureObj, Levels, GL_R8, m_width, m_height);
+            glTextureSubImage2D(m_textureObj, 0, 0, 0, m_width, m_height, GL_RED, GL_UNSIGNED_BYTE, pImageData);
+            break;
+
+        case 2:
+            glTextureStorage2D(m_textureObj, Levels, GL_RG8, m_width, m_height);
+            glTextureSubImage2D(m_textureObj, 0, 0, 0, m_width, m_height, GL_RG, GL_UNSIGNED_BYTE, pImageData);
+            break;
+
+        case 3:
+            glTextureStorage2D(m_textureObj, Levels, GL_RGB8, m_width, m_height);
+            glTextureSubImage2D(m_textureObj, 0, 0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, pImageData);
+            break;
+
+        case 4:
+            glTextureStorage2D(m_textureObj, Levels, GL_RGBA8, m_width, m_height);
+            glTextureSubImage2D(m_textureObj, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, pImageData);
+            break;
+
+        default:
+            break;
+        }
+    }
+    else {
+        printf("Support for texture target %x is not implemented\n", m_textureTarget);
+        exit(1);
+    }
+
+    glTextureParameteri(m_textureObj, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameterf(m_textureObj, GL_TEXTURE_BASE_LEVEL, 0);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glGenerateTextureMipmap(m_textureObj);
 }
 
-
-void Texture::Load(const std::string& Filename)
+void Texture::Load(const std::vector<std::string>& filePaths, int colorComponents)
 {
-	m_fileName = Filename;
+    if (m_textureTarget != GL_TEXTURE_2D_ARRAY) {
+        std::cerr << " Load with multiple files is only supported for GL_TEXTURE_2D_ARRAY and not: " << m_textureTarget << std::endl;
+        exit(0);
+    }
 
-	if (!Load()) {
-		exit(0);
-	}
+    std::vector<uint8_t*> imageData;
+
+    for (int i = 0; i < filePaths.size(); i++) {
+        imageData.push_back(FetchImageData(filePaths[i], colorComponents));
+    }
+
+    int levels = CalculateMipMapLevel();
+    glCreateTextures(m_textureTarget, 1, &m_textureObj);
+    glTextureStorage3D(m_textureObj, levels, GL_RGBA8, m_width, m_height, imageData.size());
+
+
+    for (int i = 0; i < imageData.size(); i++) {
+        glTextureSubImage3D(m_textureObj, 0, 0, 0, i, m_width, m_height, 1, GL_RGBA, GL_UNSIGNED_BYTE, imageData[i]);
+    }
+
+    for (auto& data : imageData) {
+        stbi_image_free(data);
+    }
+
+    glTextureParameteri(m_textureObj, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTextureParameteri(m_textureObj, GL_TEXTURE_MAX_ANISOTROPY, 16);
+
+    glGenerateTextureMipmap(m_textureObj);
 }
 
-
-void Texture::LoadRaw(int Width, int Height, int BPP, const unsigned char* pImageData)
+unsigned char* Texture::FetchImageData(std::string filePath, int colorComponents)
 {
-	m_imageWidth = Width;
-	m_imageHeight = Height;
-	m_imageBPP = BPP;
-
-	LoadInternal(pImageData);
+    unsigned char* pImageData = stbi_load(filePath.c_str(), &m_width, &m_height, &m_bpp, colorComponents);
+    if (!pImageData) {
+        std::cerr << "Can't load texture from '" << filePath << "' - " << stbi_failure_reason() << std::endl;
+    }
+    return pImageData;
 }
 
-
-void Texture::LoadInternal(const void* pImageData)
+int Texture::CalculateMipMapLevel() const
 {
-	LoadInternalDSA(pImageData);
-}
-
-void Texture::LoadInternalDSA(const void* pImageData)
-{
-	glCreateTextures(m_textureTarget, 1, &m_textureObj);
-
-	int Levels = std::min(5, (int)log2f((float)std::max(m_imageWidth, m_imageHeight)));
-
-	if (m_textureTarget == GL_TEXTURE_2D) {
-		switch (m_imageBPP) {
-		case 1:
-			glTextureStorage2D(m_textureObj, Levels, GL_R8, m_imageWidth, m_imageHeight);
-			glTextureSubImage2D(m_textureObj, 0, 0, 0, m_imageWidth, m_imageHeight, GL_RED, GL_UNSIGNED_BYTE, pImageData);
-			break;
-
-		case 2:
-			glTextureStorage2D(m_textureObj, Levels, GL_RG8, m_imageWidth, m_imageHeight);
-			glTextureSubImage2D(m_textureObj, 0, 0, 0, m_imageWidth, m_imageHeight, GL_RG, GL_UNSIGNED_BYTE, pImageData);
-			break;
-
-		case 3:
-			glTextureStorage2D(m_textureObj, Levels, GL_RGB8, m_imageWidth, m_imageHeight);
-			glTextureSubImage2D(m_textureObj, 0, 0, 0, m_imageWidth, m_imageHeight, GL_RGB, GL_UNSIGNED_BYTE, pImageData);
-			break;
-
-		case 4:
-			glTextureStorage2D(m_textureObj, Levels, GL_RGBA8, m_imageWidth, m_imageHeight);
-			glTextureSubImage2D(m_textureObj, 0, 0, 0, m_imageWidth, m_imageHeight, GL_RGBA, GL_UNSIGNED_BYTE, pImageData);
-			break;
-
-		default:
-			break;
-		}
-	}
-	else {
-		printf("Support for texture target %x is not implemented\n", m_textureTarget);
-		exit(1);
-	}
-
-	glTextureParameteri(m_textureObj, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTextureParameteri(m_textureObj, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameterf(m_textureObj, GL_TEXTURE_BASE_LEVEL, 0);
-	glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glGenerateTextureMipmap(m_textureObj);
-}
-
-
-void Texture::LoadF32(int Width, int Height, const float* pImageData)
-{
-	m_imageWidth = Width;
-	m_imageHeight = Height;
-
-	glCreateTextures(m_textureTarget, 1, &m_textureObj);
-	glTextureStorage2D(m_textureObj, 1, GL_R32F, m_imageWidth, m_imageHeight);
-	glTextureSubImage2D(m_textureObj, 0, 0, 0, m_imageWidth, m_imageHeight, GL_RED, GL_FLOAT, pImageData);
-
-	glTextureParameteri(m_textureObj, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(m_textureObj, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameterf(m_textureObj, GL_TEXTURE_BASE_LEVEL, 0);
-	glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_T, GL_REPEAT);
-}
-
-void Texture::CreateEmpty32FTexture(int width, int height, GLenum format) {
-	m_imageWidth = width;
-	m_imageHeight = height;
-	m_imageBPP = 4; // Assuming RGBA format
-	m_format = format;
-
-	glCreateTextures(m_textureTarget, 1, &m_textureObj);
-	glTextureStorage2D(m_textureObj, 1, format, m_imageWidth, m_imageHeight); // Using GL_R32F format
-	// You can change GL_R32F to GL_RGBA8 if you need RGBA format
-	// glTextureStorage2D(m_textureObj, 1, GL_RGBA8, m_imageWidth, m_imageHeight);
-
-	// Set texture parameters
-	glTextureParameteri(m_textureObj, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(m_textureObj, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameterf(m_textureObj, GL_TEXTURE_BASE_LEVEL, 0);
-	glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTextureParameteri(m_textureObj, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    return std::min(5, (int)log2f((float)std::max(m_width, m_height)));
 }
 
 
 void Texture::Bind(GLenum TextureUnit)
 {
-	BindInternalDSA(TextureUnit);
+	glBindTextureUnit(TextureUnit - GL_TEXTURE0, m_textureObj);
 }
 
 void Texture::BindImage(GLenum ImageUnit, GLenum access)
 {
 	glBindImageTexture(ImageUnit - GL_TEXTURE0, m_textureObj, 0, GL_FALSE, 0, access, m_format);
-}
-
-void Texture::BindInternalDSA(GLenum TextureUnit)
-{
-	glBindTextureUnit(TextureUnit - GL_TEXTURE0, m_textureObj);
 }

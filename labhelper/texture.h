@@ -2,56 +2,40 @@
 #define TEXTURE_H
 
 #include <string>
-
+#include <vector>
 #include <GL/glew.h>
 
 class Texture
 {
 public:
-    Texture(GLenum TextureTarget, const std::string& FileName);
-
     Texture(GLenum TextureTarget);
 
     ~Texture();
 
-    // Should be called once to load the texture
-    bool Load();
+	void CreateEmptyTexture(int width, int height, GLenum format);
 
-    void Load(unsigned int BufferSize, void* pImageData);
+	void Load(const std::string& filename, int colorComponents);
 
-    void Load(const std::string& Filename);
+	void Load(const std::vector<std::string>& filePaths, int colorComponents);
 
-    void LoadRaw(int Width, int Height, int BPP, const unsigned char* pImageData);
+	// Bind the texture array to a texture unit
+	void Bind(GLenum TextureUnit);
 
-    void LoadF32(int Width, int Height, const float* pImageData);
-
-    void CreateEmpty32FTexture(int width, int height, GLenum format);
-
-    // Must be called at least once for the specific texture unit
-    void Bind(GLenum TextureUnit);
-
-    void BindImage(GLenum ImageUnit, GLenum access);
-
-    void GetImageSize(int& ImageWidth, int& ImageHeight)
-    {
-        ImageWidth = m_imageWidth;
-        ImageHeight = m_imageHeight;
-    }
-
-    GLuint GetTexture() const { return m_textureObj; }
+	void BindImage(GLenum ImageUnit, GLenum access);
+	// Get the texture array object
+	GLuint GetTexture() const { return m_textureObj; }
 
 private:
-    void LoadInternal(const void* pImageData);
-    void LoadInternalDSA(const void* pImageData);
-    void BindInternalDSA(GLenum TextureUnit);
+	unsigned char* FetchImageData(std::string filePath, int colorComponents);
+	int CalculateMipMapLevel() const;
 
-    std::string m_fileName;
-    GLenum m_textureTarget;
-    GLenum m_format;
-    GLuint m_textureObj;
-    int m_imageWidth = 0;
-    int m_imageHeight = 0;
-    int m_imageBPP = 0;
+	int m_width;
+	int m_height;
+	int m_bpp;
+	GLenum m_format;
+
+	GLenum m_textureTarget;
+	GLuint m_textureObj;
 };
 
 
