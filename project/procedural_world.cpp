@@ -55,7 +55,7 @@ void ProceduralWorld::Run() {
 		labhelper::newFrame(g_window);
 
 		UpdateWindowDimensions();
-		
+
 		UpdateWorld();
 		// Render Scene
 		Render();
@@ -177,14 +177,12 @@ void ProceduralWorld::RegenerateTerrain() {
 // TODO: FIX TERRAIN GENERATION
 void ProceduralWorld::GenerateTerrain()
 {
-	// TODO: LOOK OVER SLOPE IN SHADERS
-	m_terrain.setSlope(slopeSettings.slope, slopeSettings.slopeRange);
 	// FIX AS WELL
 	m_terrain.InitTerrain(worldSettings.worldScale,
 		worldSettings.worldSize,
 		worldSettings.textureScale,
 		worldSettings.patchSize,
-		noiseSettings, 
+		noiseSettings,
 		&terrainTechnique);
 	// Set up uniforms in Terrain Technique
 	terrainTechnique.Enable();
@@ -192,6 +190,10 @@ void ProceduralWorld::GenerateTerrain()
 	terrainTechnique.SetMaxHeight(noiseSettings.maxHeight);
 	terrainTechnique.SetOffSetHeight(offSetHeight);
 	terrainTechnique.SetTextureScale(colorTextureScale);
+	terrainTechnique.SetTextureStartHeights(textureStartHeights);
+	terrainTechnique.SetTextureEndHeights(textureBlends);
+	terrainTechnique.SetTextureStartSlopes(textureStartSlope);
+	terrainTechnique.SetTextureEndSlopes(textureEndSlope);
 }
 
 void ProceduralWorld::UpdateHeightMap()

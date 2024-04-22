@@ -92,19 +92,13 @@ void BaseTerrain::setSlope(const float slope, const float slopeRange)
 }
 
 void BaseTerrain::InitTextures() {
-	std::string textureDirectory = "../scenes/Textures/";
 	std::vector<std::string> textFilenames = {
-	"desert_sand_d.jpg",
-	"grass_green_d.jpg",
-	"mntn_dark_d.jpg",
-	"snow1_d.jpg",
-	"mntn_brown_d.jpg",
-	"snow_mntn2_d.jpg" };
-
-	// Iterate over each filename and append the directory path
-	for (std::string& filename : textFilenames) {
-		filename = textureDirectory + filename;
-	}
+	"../scenes/Textures/desert_sand_d.jpg",
+	"../scenes/Textures/grass_green_d.jpg",
+	"../scenes/Textures/mntn_dark_d.jpg",
+	"../scenes/Textures/snow1_d.jpg",
+	"../scenes/Textures/mntn_brown_d.jpg",
+	"../scenes/Textures/snow_mntn2_d.jpg" };
 
 	m_terrainTextures.Load(textFilenames, 4);
 }

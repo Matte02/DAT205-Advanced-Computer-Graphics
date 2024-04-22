@@ -27,11 +27,21 @@ public:
 
     void SetTextureScale(const float textureScale);
 
+    void SetTextureStartHeights(std::array<float, 6> heights);
+    void SetTextureEndHeights(std::array<float, 6> heights);
+    void SetTextureStartSlopes(std::array<float, 6> slopes);
+    void SetTextureEndSlopes(std::array<float, 6> slopes);
+
 private:
     GLuint m_viewModeLoc = -1;
 
     GLuint m_terrainTexturesLoc = -1;
     GLuint m_textureScaleLoc = -1;
+
+    GLuint m_textureStartHeightsLoc = -1;
+    GLuint m_textureEndHeightsLoc = -1;
+    GLuint m_textureStartSlopeLoc = -1;
+    GLuint m_textureEndSlopeLoc = -1;
 
     GLuint m_ViewProjectionLoc = -1;
     GLuint m_ViewLoc = -1;

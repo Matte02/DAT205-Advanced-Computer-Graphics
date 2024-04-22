@@ -4,34 +4,35 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/random.hpp>
 #include<ctime>
+#include <random>
 
 struct NoiseSettings {
 	float lacunarity{ 1.4f };
-	float persistence{ 0.7f };
+	float persistence{ 0.71f };
 	int octaves{ 16 };
-	float noiseScale{ 5.0f };
-	float exponent{ 1.2f };
+	float noiseScale{ 2.0f };
+	float exponent{ 1.0f };
 	float minHeight{ 0.0f };
-	float maxHeight{ 150.0f};
+	float maxHeight{ 250.0f};
 	glm::vec2 offsets[16];
 	int seed{ 0 };
 
 	NoiseSettings() {
-		srand(seed);
 		generateRandomOffsets();
 	};
 
 	void RandomizeSeed() {
-		seed = static_cast<int>(std::time(nullptr)); // Use current time as seed
 		seed = rand();
-		srand(seed);
 	}
 
 	// Function to generate random offsets based on the seed
 	void generateRandomOffsets() {
-		
+		std::mt19937 rng(seed); // Initialize random number generator with seed
+		std::uniform_real_distribution<float> dist(-1000.0f, 1000.0f); // Adjust range as needed
+
+		// Generate random offsets using the random number generator
 		for (int i = 0; i < 16; ++i) {
-			offsets[i] = glm::vec2{ glm::linearRand(-10000.0f, 10000.0f), -glm::linearRand(-10000.0f, 10000.0f) };
+			offsets[i] = glm::vec2(dist(rng), dist(rng));
 		}
 	}
 };

@@ -5,8 +5,13 @@ layout (quads, fractional_odd_spacing, ccw) in;
 
 in vec2 Tex2[];
 
-out vec2 Tex3;
-out float Height;
+
+
+out DATA{
+vec3 worldPos;
+vec2 textureCoords;
+float HeightRatio;
+} Out;
 
 uniform float u_maxHeight;
 uniform float u_offSetHeight;
@@ -27,10 +32,10 @@ void main()
 
     vec2 t0 = mix(t00, t01, u);
     vec2 t1 = mix(t10, t11, u);
-    Tex3 = mix(t0, t1, v);
+    Out.textureCoords = mix(t0, t1, v);
 
     // Sample height from the height map
-    Height = texture(u_heightMap, Tex3).x;
+    Out.HeightRatio = texture(u_heightMap, Out.textureCoords).x;
 
     // Interpolate positions
     vec4 p00 = gl_in[0].gl_Position;
@@ -43,8 +48,8 @@ void main()
     vec4 p = mix(p0, p1, v);
 
     // Add sampled height to the position
-    p.y += Height * u_maxHeight + u_offSetHeight;
-
+    p.y += Out.HeightRatio * u_maxHeight + u_offSetHeight;
+    Out.worldPos = p.xyz;
     // Transform from world to clip space
     gl_Position = u_viewProjectionMatrix * p;
 }

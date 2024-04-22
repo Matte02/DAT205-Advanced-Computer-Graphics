@@ -123,19 +123,52 @@ void ProceduralWorld::GuiTexture()
 		ImGui::Indent();
 
 		ImGui::Text("View Mode:");
-		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 10)) {
+		if (ImGui::SliderInt("##View Mode", &viewMode, 0, 15)) {
 			terrainTechnique.SetViewMode(viewMode);
 		}
 
-			ImGui::Text("Texture Scale:");
+		ImGui::Text("Texture Scale:");
 		regenerateWorld |= ImGui::SliderFloat("##Texture Scale", &worldSettings.textureScale, 0.1f, 4.0f);
 
 		ImGui::Text("Color Texture Scale:");
 		if (ImGui::SliderFloat("##Color Texture Scale", &colorTextureScale, 1.0f, 256.0f)) {
 			terrainTechnique.SetTextureScale(colorTextureScale);
 		}
+		if (ImGui::CollapsingHeader("Individual Texture Settings")) {
+			ImGui::Indent();
+			for (int i = 0; i < NUMBER_OF_TEXTURES; ++i) {
+				ImGui::Text("Texture %d", i + 1);
+				/*if (ImGui::SliderFloat(("Start Height##" + std::to_string(i)).c_str(), &textureStartHeights[i], 0.0f, textureBlends[i])) {
+					if (textureStartHeights[i] > textureBlends[i]) {
+						textureStartHeights[i] = textureBlends[i];
+						terrainTechnique.SetTextureStartHeights(textureStartHeights);
+					}
+				}
+				if (ImGui::SliderFloat(("End Height##" + std::to_string(i)).c_str(), &textureBlends[i], textureStartHeights[i], 1.0f)) {
+					if (textureStartHeights[i] > textureBlends[i]) {
+						textureBlends[i] = textureStartHeights[i];
+						terrainTechnique.SetTextureEndHeights(textureBlends);
+					}
+				}*/
+				if (ImGui::SliderFloat(("Start Height##" + std::to_string(i)).c_str(), &textureStartHeights[i], 0.0f, 1)) {
+					terrainTechnique.SetTextureStartHeights(textureStartHeights);
+				}
+				if (ImGui::SliderFloat(("End Height##" + std::to_string(i)).c_str(), &textureBlends[i], 0, 1.0f)) {
+					terrainTechnique.SetTextureEndHeights(textureBlends);
+				}
+				if (ImGui::SliderFloat(("Start Slope##" + std::to_string(i)).c_str(), &textureStartSlope[i], 0.0f, 90)) {
+					terrainTechnique.SetTextureStartSlopes(textureStartSlope);
+				}
+				if (ImGui::SliderFloat(("End Slope##" + std::to_string(i)).c_str(), &textureEndSlope[i],0,90)) {
+					terrainTechnique.SetTextureEndSlopes(textureEndSlope);
+				}
+
+				ImGui::Separator();
+			}
+		}
 		ImGui::Unindent();
 	}
+	ImGui::Unindent();
 }
 
 void ProceduralWorld::GuiTerrain()
@@ -189,7 +222,10 @@ void ProceduralWorld::GuiNoiseSettings()
 
 
 		ImGui::Text("Seed:");
-		ImGui::SliderInt("##Seed", &noiseSettings.seed, -1, 100000);
+		if (ImGui::SliderInt("##Seed", &noiseSettings.seed, -1000000, 1000000)) {
+			regenerateWorld = true;
+			noiseSettings.generateRandomOffsets();
+		}
 		ImGui::Text("Lacunarity:");
 		regenerateWorld |= ImGui::SliderFloat("##Lacunarity", &noiseSettings.lacunarity, 0.1f, 2.0f);
 
@@ -221,12 +257,6 @@ void ProceduralWorld::GuiNoiseSettings()
 			noiseSettings.generateRandomOffsets();
 			regenerateWorld = true;
 		}
-		// Button to generate random offsets
-		if (ImGui::Button("Generate Random Offsets with current seed")) {
-			noiseSettings.generateRandomOffsets();
-			regenerateWorld = true;
-		}
-
 
 		ImGui::Unindent();
 	}

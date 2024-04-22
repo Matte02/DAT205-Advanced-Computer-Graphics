@@ -5,6 +5,7 @@
 #include "scene/camera.h"
 #include <erosion.h>
 #include "scene/NoiseSettings.h"
+#include <array>
 
 class ProceduralWorld {
 public:
@@ -44,7 +45,6 @@ private:
 	void GuiTexture();
 	void GuiTerrain();
 	void GuiNoiseSettings();
-	void GuiErosion();
 
 
 	// Generate Terrain
@@ -115,28 +115,7 @@ private:
 		float textureScale = 1;
 		int patchSize = 32;
 	};
-	// TODO: LOOK OVER
-	struct SlopeSettings {
-		float slope = 35.0f;
-		float slopeRange = 12.5f;
-	};
 
-	// YUCK FIX
-	std::vector<std::string> textFilenames = { "desert_sand_d.jpg",
-	"grass_green_d.jpg",
-	"mntn_dark_d.jpg",
-	"snow1_d.jpg",
-	"mntn_brown_d.jpg",
-	"snow_mntn2_d.jpg",
-	"desert_sand_n.jpg",
-	"grass_green_n.jpg",
-	"mntn_dark_n.jpg",
-	"snow1_n.jpg",
-	"mntn_brown_n.jpg",
-	"snow_mntn2_n.jpg" };
-
-	// TODO: LOOK OVER
-	SlopeSettings slopeSettings;
 	WorldSettings worldSettings;
 	NoiseSettings noiseSettings;
 
@@ -144,11 +123,23 @@ private:
 	bool updateHeightMap = false;
 	bool regenerateWorld = false;
 
-	float offSetHeight = 0;
-	float colorTextureScale = 16;
+	// Texture Settings
+#define NUMBER_OF_TEXTURES 6
+	const float MAX_SLOPE = 90;
+	// Heights are between 0 and 1
+	std::array<float, NUMBER_OF_TEXTURES> textureStartHeights = { 0.0f, 0.35f, 0.425f, 0.55f, 0.0, 0.55f };
+	std::array<float, NUMBER_OF_TEXTURES> textureBlends = { 0.4f, 0.475f, 0.65f, 1.0f, 0.6, 1.0f };
+	// Slope are between 0 and 90
+	std::array<float, NUMBER_OF_TEXTURES> textureStartSlope = { 0.0, 0.0, 0.0, 0.0, 22.5, 22};
+	std::array<float, NUMBER_OF_TEXTURES> textureEndSlope = { 27.5, 32.5, 32, 32.5, 90, 90 };
 
+	float colorTextureScale = 64;
+
+	float offSetHeight = 0;
 	BaseTerrain m_terrain;
 	TerrainTechnique terrainTechnique;
+
+
 	Erosion erosion;
 	float maxChangeThreshold = 1;
 	int erosionIteration = 1;

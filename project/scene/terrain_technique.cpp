@@ -1,5 +1,6 @@
 #include "terrain_technique.h"
 #include "texture_config.h"
+#include "array"
 
 constexpr auto SHADER_DIR = "../shaders/";
 
@@ -58,7 +59,12 @@ bool TerrainTechnique::Init()
 	m_minDistanceLoc = GetUniformLocation("u_minDistance");
 	m_maxTessLevelLoc = GetUniformLocation("u_maxTessLevel");
 	m_minTessLevelLoc = GetUniformLocation("u_minTessLevel");
-	
+
+
+	m_textureStartHeightsLoc = GetUniformLocation("u_startHeights");
+	m_textureEndHeightsLoc = GetUniformLocation("u_endHeights");
+	m_textureStartSlopeLoc = GetUniformLocation("u_startSlope");
+	m_textureEndSlopeLoc = GetUniformLocation("u_endSlope");
 
 	if (m_viewModeLoc		== INVALID_UNIFORM_LOCATION ||
 		m_ViewProjectionLoc == INVALID_UNIFORM_LOCATION ||
@@ -72,7 +78,11 @@ bool TerrainTechnique::Init()
 		m_maxDistanceLoc	== INVALID_UNIFORM_LOCATION ||
 		m_minDistanceLoc	== INVALID_UNIFORM_LOCATION ||
 		m_maxTessLevelLoc	== INVALID_UNIFORM_LOCATION ||
-		m_minTessLevelLoc	== INVALID_UNIFORM_LOCATION 
+
+		m_textureStartHeightsLoc == INVALID_UNIFORM_LOCATION ||
+		m_textureEndHeightsLoc == INVALID_UNIFORM_LOCATION ||
+		m_textureStartSlopeLoc == INVALID_UNIFORM_LOCATION ||
+		m_textureEndSlopeLoc == INVALID_UNIFORM_LOCATION
 		) {
 		return false;
 	}
@@ -123,4 +133,24 @@ void TerrainTechnique::SetViewMode(const int viewMode)
 void TerrainTechnique::SetTextureScale(const float textureScale)
 {
 	glUniform1f(m_textureScaleLoc, textureScale);
+}
+
+void TerrainTechnique::SetTextureStartHeights(std::array<float, 6> heights)
+{
+	glUniform1fv(m_textureStartHeightsLoc, 6, (const GLfloat*) &heights);
+}
+
+void TerrainTechnique::SetTextureEndHeights(std::array<float, 6> heights)
+{
+	glUniform1fv(m_textureEndHeightsLoc, 6, (const GLfloat*)&heights);
+}
+
+void TerrainTechnique::SetTextureStartSlopes(std::array<float, 6> slopes)
+{
+	glUniform1fv(m_textureStartSlopeLoc, 6, (const GLfloat*)&slopes);
+}
+
+void TerrainTechnique::SetTextureEndSlopes(std::array<float, 6> slopes)
+{
+	glUniform1fv(m_textureEndSlopeLoc, 6, (const GLfloat*)&slopes);
 }
