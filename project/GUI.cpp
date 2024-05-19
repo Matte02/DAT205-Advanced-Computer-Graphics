@@ -18,6 +18,7 @@ enum KeyBindings {
 
 // Handle events function definition
 bool ProceduralWorld::HandleEvents(void) {
+	labhelper::perf::Scope s("Handle Events");
 	// Check events (keyboard among others)
 	SDL_Event event;
 	bool quitEvent = false;

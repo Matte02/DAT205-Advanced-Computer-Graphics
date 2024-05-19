@@ -61,6 +61,7 @@ void ProceduralWorld::Run() {
 		Render();
 		// Render GUI Overlay
 		RenderGuiOverlay();
+
 		// Finish the frame and render the GUI
 		labhelper::finishFrame();
 
@@ -104,7 +105,10 @@ void ProceduralWorld::Render()
 		labhelper::perf::Scope s("Background");
 		RenderBackground(projMatrix);
 	}
-	m_terrain.Render(camera.getViewMatrix(), projMatrix, camera.position, normalize(vec3(-lightPosition)));
+	{
+		labhelper::perf::Scope s("Terrain");
+		m_terrain.Render(camera.getViewMatrix(), projMatrix, camera.position, normalize(vec3(-lightPosition)));
+	}
 }
 
 void ProceduralWorld::RenderBackground(const mat4& projectionMatrix)

@@ -11,7 +11,7 @@ add_library(scene
     texture_config.h
     generation_technique.h generation_technique.cpp
     NoiseSettings.h
-    normal_map_technique.h normal_map_technique.cpp)
+    normal_map_technique.h normal_map_technique.cpp "hydraulic_erosion.h" "hydraulic_erosion.cpp")
 
 # Include the necessary directories for this library.
 target_include_directories(scene PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

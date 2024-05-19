@@ -10,11 +10,12 @@
 #include "labhelper.h"
 #include <Model.h>
 #include "texture_config.h"
+#include "perf.h"
 
 BaseTerrain::BaseTerrain() {
 }
 
-void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, NoiseSettings settings, TerrainTechnique* terrainTechnique )
+void BaseTerrain::InitTerrain(float WorldScale, int WorldSize, float TextureScale, int numPatches, NoiseSettings settings, TerrainTechnique* terrainTechnique)
 {
 
 	m_technique = terrainTechnique;
@@ -129,14 +130,15 @@ void BaseTerrain::Destroy()
 void BaseTerrain::Render(const mat4 viewMatrix, const mat4 projectionMatrix, const vec3& CameraPos, const vec3& lightDirection)
 {
 
-	m_technique->Enable();
-	m_technique->SetViewMatrix(viewMatrix);
-	m_technique->SetViewProjectionMatrix(projectionMatrix * viewMatrix);
-
-	m_heightMapTexture.Bind(HEIGHT_MAP_TEXTURE_UNIT);
-	m_normalMapTexture.Bind(NORMAL_MAP_TEXTURE_UNIT);
-	m_terrainTextures.Bind(TERRAIN_TEXTURES_UNIT);
-
+	{
+		m_technique->Enable();
+		m_technique->SetViewMatrix(viewMatrix);
+		m_technique->SetViewProjectionMatrix(projectionMatrix * viewMatrix);
+		labhelper::perf::Scope s("Binding Textures");
+		m_heightMapTexture.Bind(HEIGHT_MAP_TEXTURE_UNIT);
+		m_normalMapTexture.Bind(NORMAL_MAP_TEXTURE_UNIT);
+		m_terrainTextures.Bind(TERRAIN_TEXTURES_UNIT);
+	}
 	m_quadList.Render();
 }
 

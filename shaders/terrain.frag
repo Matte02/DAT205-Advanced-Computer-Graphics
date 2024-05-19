@@ -51,7 +51,7 @@ float[NUM_TEXTURES] TerrainBlending(vec3 worldNormal) {
 	float total = 0;
 	for (int i = 0; i < NUM_TEXTURES; i++) {
 		float heightValue = CustomLerp(u_startHeights[i], u_endHeights[i], In.HeightRatio);
-		float slopeValue = CustomLerp(u_startSlope[i], u_endSlope[i], slope); // IDK WHAT FUNTION IT SHOULD BE
+		float slopeValue = CustomLerp(u_startSlope[i], u_endSlope[i], slope);
 		float value = heightValue * slopeValue;
 		total += value;
 		drawStrenghts[i] = value;
@@ -90,10 +90,6 @@ void main()
 	} else if (u_viewMode >= 3 && u_viewMode < 9) {
 	// Render each texture individually
 		int index = u_viewMode - 3;
-		float t = u_startHeights[index];
-		t = u_endHeights[index];
-		t = u_startSlope[index];
-		t = u_endSlope[index];
 		fragmentColor = texture(u_terrainTextures, vec3(scaledTexCoord, index));
 	} else if (u_viewMode == 9) {
 	// Actual Color
@@ -114,7 +110,7 @@ void main()
 		} else {
 			outColor = TerrainColoring().xyz;
 		}
-		fragmentColor = vec4(vec3(drawStrenghts[0]), 1.0f);
+		fragmentColor = vec4(outColor, 1.0f);
 	} else if (u_viewMode == 11) {
 	// Actual Color
 		vec3 normal = texture(u_normalMap, In.textureCoords).xyz;
